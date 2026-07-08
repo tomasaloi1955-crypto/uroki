@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 11,
+  "topic": "Школа",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "School",
+      "tr": "скул",
+      "ru": "школа",
+      "emoji": "🏫"
+    },
+    {
+      "word": "Book",
+      "tr": "бук",
+      "ru": "книга",
+      "emoji": "📖"
+    },
+    {
+      "word": "Pen",
+      "tr": "пэн",
+      "ru": "ручка",
+      "emoji": "🖊"
+    },
+    {
+      "word": "Pencil",
+      "tr": "пэнсил",
+      "ru": "карандаш",
+      "emoji": "✏️"
+    },
+    {
+      "word": "Bag",
+      "tr": "бэг",
+      "ru": "портфель",
+      "emoji": "🎒"
+    },
+    {
+      "word": "Lesson",
+      "tr": "лэсэн",
+      "ru": "урок",
+      "emoji": "📚"
+    }
+  ]
+}

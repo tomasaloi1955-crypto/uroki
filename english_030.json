@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 30,
+  "topic": "Рассказ о себе",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Hello! I'm Maryam",
+      "tr": "хэлоу айм Марьям",
+      "ru": "привет, я Марьям",
+      "emoji": "🙋"
+    },
+    {
+      "word": "I'm from Russia",
+      "tr": "айм фром раша",
+      "ru": "я из России",
+      "emoji": "🏠"
+    },
+    {
+      "word": "This is my family",
+      "tr": "зис из май фэмили",
+      "ru": "это моя семья",
+      "emoji": "👨"
+    },
+    {
+      "word": "I like English",
+      "tr": "ай лайк инглиш",
+      "ru": "я люблю английский",
+      "emoji": "❤️"
+    },
+    {
+      "word": "Thank you",
+      "tr": "сэнк ю",
+      "ru": "спасибо",
+      "emoji": "🙏"
+    },
+    {
+      "word": "See you!",
+      "tr": "си ю",
+      "ru": "увидимся!",
+      "emoji": "👋"
+    }
+  ]
+}

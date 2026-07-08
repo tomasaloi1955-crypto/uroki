@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 23,
+  "topic": "Транспорт",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Car",
+      "tr": "ка",
+      "ru": "машина",
+      "emoji": "🚗"
+    },
+    {
+      "word": "Bus",
+      "tr": "бас",
+      "ru": "автобус",
+      "emoji": "🚌"
+    },
+    {
+      "word": "Train",
+      "tr": "трэйн",
+      "ru": "поезд",
+      "emoji": "🚆"
+    },
+    {
+      "word": "Plane",
+      "tr": "плэйн",
+      "ru": "самолёт",
+      "emoji": "✈️"
+    },
+    {
+      "word": "Bike",
+      "tr": "байк",
+      "ru": "велосипед",
+      "emoji": "🚲"
+    },
+    {
+      "word": "Ship",
+      "tr": "шип",
+      "ru": "корабль",
+      "emoji": "🚢"
+    }
+  ]
+}

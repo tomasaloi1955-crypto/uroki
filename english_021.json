@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 21,
+  "topic": "Природа",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Tree",
+      "tr": "три",
+      "ru": "дерево",
+      "emoji": "🌳"
+    },
+    {
+      "word": "Flower",
+      "tr": "флауэ",
+      "ru": "цветок",
+      "emoji": "🌸"
+    },
+    {
+      "word": "Sea",
+      "tr": "си",
+      "ru": "море",
+      "emoji": "🌊"
+    },
+    {
+      "word": "Mountain",
+      "tr": "маунтин",
+      "ru": "гора",
+      "emoji": "⛰"
+    },
+    {
+      "word": "Star",
+      "tr": "ста",
+      "ru": "звезда",
+      "emoji": "⭐"
+    },
+    {
+      "word": "Moon",
+      "tr": "мун",
+      "ru": "луна",
+      "emoji": "🌙"
+    }
+  ]
+}

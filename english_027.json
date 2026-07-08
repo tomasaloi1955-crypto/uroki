@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 27,
+  "topic": "Предлоги места",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "In",
+      "tr": "ин",
+      "ru": "в",
+      "emoji": "📦"
+    },
+    {
+      "word": "On",
+      "tr": "он",
+      "ru": "на",
+      "emoji": "🔝"
+    },
+    {
+      "word": "Under",
+      "tr": "андэ",
+      "ru": "под",
+      "emoji": "⬇️"
+    },
+    {
+      "word": "Near",
+      "tr": "ниэ",
+      "ru": "рядом",
+      "emoji": "📍"
+    },
+    {
+      "word": "The cat is on the bed",
+      "tr": "зэ кэт из он зэ бэд",
+      "ru": "кошка на кровати",
+      "emoji": "🛏"
+    },
+    {
+      "word": "The book is in the bag",
+      "tr": "зэ бук из ин зэ бэг",
+      "ru": "книга в портфеле",
+      "emoji": "🎒"
+    }
+  ]
+}

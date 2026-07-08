@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 9,
+  "topic": "Напитки и фрукты",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Water",
+      "tr": "уотэ",
+      "ru": "вода",
+      "emoji": "💧"
+    },
+    {
+      "word": "Tea",
+      "tr": "ти",
+      "ru": "чай",
+      "emoji": "🍵"
+    },
+    {
+      "word": "Juice",
+      "tr": "джус",
+      "ru": "сок",
+      "emoji": "🍹"
+    },
+    {
+      "word": "Banana",
+      "tr": "бэнанэ",
+      "ru": "банан",
+      "emoji": "🍌"
+    },
+    {
+      "word": "Orange",
+      "tr": "ориндж",
+      "ru": "апельсин",
+      "emoji": "🍊"
+    },
+    {
+      "word": "Grapes",
+      "tr": "грэйпс",
+      "ru": "виноград",
+      "emoji": "🍇"
+    }
+  ]
+}

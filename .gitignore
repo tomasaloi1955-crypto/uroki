@@ -1,0 +1,9 @@
+build/
+client_secret.json
+token.json
+tiktok_token.json
+TIKTOK_TODAY/
+*.log
+build_all_log.txt
+build_all_errors.txt
+__pycache__/

@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 24,
+  "topic": "Время",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Morning",
+      "tr": "монинг",
+      "ru": "утро",
+      "emoji": "🌅"
+    },
+    {
+      "word": "Day",
+      "tr": "дэй",
+      "ru": "день",
+      "emoji": "🌞"
+    },
+    {
+      "word": "Evening",
+      "tr": "ивнинг",
+      "ru": "вечер",
+      "emoji": "🌇"
+    },
+    {
+      "word": "Night",
+      "tr": "найт",
+      "ru": "ночь",
+      "emoji": "🌙"
+    },
+    {
+      "word": "Today",
+      "tr": "тудэй",
+      "ru": "сегодня",
+      "emoji": "📅"
+    },
+    {
+      "word": "Tomorrow",
+      "tr": "тумороу",
+      "ru": "завтра",
+      "emoji": "🌄"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 14,
+  "topic": "Погода",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Sun",
+      "tr": "сан",
+      "ru": "солнце",
+      "emoji": "☀️"
+    },
+    {
+      "word": "Rain",
+      "tr": "рэйн",
+      "ru": "дождь",
+      "emoji": "🌧"
+    },
+    {
+      "word": "Snow",
+      "tr": "сноу",
+      "ru": "снег",
+      "emoji": "❄️"
+    },
+    {
+      "word": "Wind",
+      "tr": "уинд",
+      "ru": "ветер",
+      "emoji": "💨"
+    },
+    {
+      "word": "Cloud",
+      "tr": "клауд",
+      "ru": "облако",
+      "emoji": "☁️"
+    },
+    {
+      "word": "Rainbow",
+      "tr": "рэйнбоу",
+      "ru": "радуга",
+      "emoji": "🌈"
+    }
+  ]
+}

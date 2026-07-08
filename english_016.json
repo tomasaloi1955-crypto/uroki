@@ -1,0 +1,42 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 16,
+  "topic": "Это... — This is",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "This is a book",
+      "tr": "зис из э бук",
+      "ru": "это книга",
+      "emoji": "📖"
+    },
+    {
+      "word": "This is a cat",
+      "tr": "зис из э кэт",
+      "ru": "это кошка",
+      "emoji": "🐱"
+    },
+    {
+      "word": "This is my house",
+      "tr": "зис из май хаус",
+      "ru": "это мой дом",
+      "emoji": "🏠"
+    },
+    {
+      "word": "This is my mother",
+      "tr": "зис из май мазэ",
+      "ru": "это моя мама",
+      "emoji": "👩"
+    },
+    {
+      "word": "This is a pen",
+      "tr": "зис из э пэн",
+      "ru": "это ручка",
+      "emoji": "🖊"
+    }
+  ]
+}

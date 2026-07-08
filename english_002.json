@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 2,
+  "topic": "Знакомство",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "I'm Maryam",
+      "tr": "айм Марьям",
+      "ru": "я — Марьям",
+      "emoji": "🙋"
+    },
+    {
+      "word": "What's your name?",
+      "tr": "уотс ё нэйм",
+      "ru": "как тебя зовут?",
+      "emoji": "❓"
+    },
+    {
+      "word": "My name is Amina",
+      "tr": "май нэйм из Амина",
+      "ru": "меня зовут Амина",
+      "emoji": "📛"
+    },
+    {
+      "word": "Nice to meet you",
+      "tr": "найс ту мит ю",
+      "ru": "приятно познакомиться",
+      "emoji": "🤝"
+    },
+    {
+      "word": "Yes",
+      "tr": "йес",
+      "ru": "да",
+      "emoji": "✅"
+    },
+    {
+      "word": "No",
+      "tr": "ноу",
+      "ru": "нет",
+      "emoji": "❌"
+    }
+  ]
+}

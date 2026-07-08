@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 8,
+  "topic": "Еда",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Bread",
+      "tr": "брэд",
+      "ru": "хлеб",
+      "emoji": "🍞"
+    },
+    {
+      "word": "Milk",
+      "tr": "милк",
+      "ru": "молоко",
+      "emoji": "🥛"
+    },
+    {
+      "word": "Apple",
+      "tr": "эпл",
+      "ru": "яблоко",
+      "emoji": "🍎"
+    },
+    {
+      "word": "Egg",
+      "tr": "эг",
+      "ru": "яйцо",
+      "emoji": "🥚"
+    },
+    {
+      "word": "Cheese",
+      "tr": "чиз",
+      "ru": "сыр",
+      "emoji": "🧀"
+    },
+    {
+      "word": "Honey",
+      "tr": "хани",
+      "ru": "мёд",
+      "emoji": "🍯"
+    }
+  ]
+}

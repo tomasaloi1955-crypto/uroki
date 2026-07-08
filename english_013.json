@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 13,
+  "topic": "Одежда",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Dress",
+      "tr": "дрэс",
+      "ru": "платье",
+      "emoji": "👗"
+    },
+    {
+      "word": "Shirt",
+      "tr": "шёт",
+      "ru": "рубашка",
+      "emoji": "👕"
+    },
+    {
+      "word": "Shoes",
+      "tr": "шуз",
+      "ru": "обувь",
+      "emoji": "👟"
+    },
+    {
+      "word": "Hat",
+      "tr": "хэт",
+      "ru": "шапка",
+      "emoji": "🎩"
+    },
+    {
+      "word": "Coat",
+      "tr": "коут",
+      "ru": "пальто",
+      "emoji": "🧥"
+    },
+    {
+      "word": "Scarf",
+      "tr": "скаф",
+      "ru": "шарф",
+      "emoji": "🧣"
+    }
+  ]
+}

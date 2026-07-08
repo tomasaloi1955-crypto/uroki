@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 22,
+  "topic": "Город",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Street",
+      "tr": "стрит",
+      "ru": "улица",
+      "emoji": "🏙"
+    },
+    {
+      "word": "Shop",
+      "tr": "шоп",
+      "ru": "магазин",
+      "emoji": "🏪"
+    },
+    {
+      "word": "Park",
+      "tr": "пак",
+      "ru": "парк",
+      "emoji": "🌳"
+    },
+    {
+      "word": "Hospital",
+      "tr": "хоспитэл",
+      "ru": "больница",
+      "emoji": "🏥"
+    },
+    {
+      "word": "Mosque",
+      "tr": "моск",
+      "ru": "мечеть",
+      "emoji": "🕌"
+    },
+    {
+      "word": "Market",
+      "tr": "макит",
+      "ru": "рынок",
+      "emoji": "🛒"
+    }
+  ]
+}

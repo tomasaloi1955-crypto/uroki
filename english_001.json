@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 1,
+  "topic": "Приветствия",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Hello",
+      "tr": "хэлоу",
+      "ru": "здравствуйте",
+      "emoji": "👋"
+    },
+    {
+      "word": "Hi",
+      "tr": "хай",
+      "ru": "привет",
+      "emoji": "🙂"
+    },
+    {
+      "word": "Good morning",
+      "tr": "гуд морнинг",
+      "ru": "доброе утро",
+      "emoji": "🌅"
+    },
+    {
+      "word": "Good evening",
+      "tr": "гуд ивнинг",
+      "ru": "добрый вечер",
+      "emoji": "🌇"
+    },
+    {
+      "word": "Goodbye",
+      "tr": "гудбай",
+      "ru": "до свидания",
+      "emoji": "🚪"
+    },
+    {
+      "word": "Bye",
+      "tr": "бай",
+      "ru": "пока",
+      "emoji": "👋"
+    }
+  ]
+}

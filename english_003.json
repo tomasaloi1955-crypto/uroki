@@ -1,0 +1,42 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 3,
+  "topic": "Числа 1–5",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "One",
+      "tr": "уан",
+      "ru": "один",
+      "emoji": "🕐"
+    },
+    {
+      "word": "Two",
+      "tr": "ту",
+      "ru": "два",
+      "emoji": "🕑"
+    },
+    {
+      "word": "Three",
+      "tr": "сри",
+      "ru": "три",
+      "emoji": "🕒"
+    },
+    {
+      "word": "Four",
+      "tr": "фо",
+      "ru": "четыре",
+      "emoji": "🕓"
+    },
+    {
+      "word": "Five",
+      "tr": "файв",
+      "ru": "пять",
+      "emoji": "🕔"
+    }
+  ]
+}

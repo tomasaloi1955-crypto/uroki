@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 5,
+  "topic": "Цвета",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Red",
+      "tr": "рэд",
+      "ru": "красный",
+      "emoji": "🔴"
+    },
+    {
+      "word": "Green",
+      "tr": "грин",
+      "ru": "зелёный",
+      "emoji": "🟢"
+    },
+    {
+      "word": "Blue",
+      "tr": "блу",
+      "ru": "синий",
+      "emoji": "🔵"
+    },
+    {
+      "word": "Yellow",
+      "tr": "йелоу",
+      "ru": "жёлтый",
+      "emoji": "🟡"
+    },
+    {
+      "word": "White",
+      "tr": "уайт",
+      "ru": "белый",
+      "emoji": "⚪"
+    },
+    {
+      "word": "Black",
+      "tr": "блэк",
+      "ru": "чёрный",
+      "emoji": "⚫"
+    }
+  ]
+}

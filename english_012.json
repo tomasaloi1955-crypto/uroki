@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 12,
+  "topic": "Части тела",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Head",
+      "tr": "хэд",
+      "ru": "голова",
+      "emoji": "🙂"
+    },
+    {
+      "word": "Eye",
+      "tr": "ай",
+      "ru": "глаз",
+      "emoji": "👁"
+    },
+    {
+      "word": "Ear",
+      "tr": "иэ",
+      "ru": "ухо",
+      "emoji": "👂"
+    },
+    {
+      "word": "Nose",
+      "tr": "ноуз",
+      "ru": "нос",
+      "emoji": "👃"
+    },
+    {
+      "word": "Hand",
+      "tr": "хэнд",
+      "ru": "рука",
+      "emoji": "✋"
+    },
+    {
+      "word": "Heart",
+      "tr": "хат",
+      "ru": "сердце",
+      "emoji": "❤️"
+    }
+  ]
+}

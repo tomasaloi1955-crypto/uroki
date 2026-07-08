@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 25,
+  "topic": "Времена года",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Spring",
+      "tr": "спринг",
+      "ru": "весна",
+      "emoji": "🌱"
+    },
+    {
+      "word": "Summer",
+      "tr": "самэ",
+      "ru": "лето",
+      "emoji": "☀️"
+    },
+    {
+      "word": "Autumn",
+      "tr": "отэм",
+      "ru": "осень",
+      "emoji": "🍂"
+    },
+    {
+      "word": "Winter",
+      "tr": "уинтэ",
+      "ru": "зима",
+      "emoji": "❄️"
+    },
+    {
+      "word": "Month",
+      "tr": "манс",
+      "ru": "месяц",
+      "emoji": "📆"
+    },
+    {
+      "word": "Year",
+      "tr": "йиэ",
+      "ru": "год",
+      "emoji": "🎆"
+    }
+  ]
+}

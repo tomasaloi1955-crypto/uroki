@@ -1,0 +1,42 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 4,
+  "topic": "Числа 6–10",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Six",
+      "tr": "сикс",
+      "ru": "шесть",
+      "emoji": "🕕"
+    },
+    {
+      "word": "Seven",
+      "tr": "сэвэн",
+      "ru": "семь",
+      "emoji": "🕖"
+    },
+    {
+      "word": "Eight",
+      "tr": "эйт",
+      "ru": "восемь",
+      "emoji": "🕗"
+    },
+    {
+      "word": "Nine",
+      "tr": "найн",
+      "ru": "девять",
+      "emoji": "🕘"
+    },
+    {
+      "word": "Ten",
+      "tr": "тэн",
+      "ru": "десять",
+      "emoji": "🕙"
+    }
+  ]
+}

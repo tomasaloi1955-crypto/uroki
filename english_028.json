@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 28,
+  "topic": "Профессии",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Teacher",
+      "tr": "тичэ",
+      "ru": "учитель",
+      "emoji": "📚"
+    },
+    {
+      "word": "Doctor",
+      "tr": "доктэ",
+      "ru": "врач",
+      "emoji": "💊"
+    },
+    {
+      "word": "Cook",
+      "tr": "кук",
+      "ru": "повар",
+      "emoji": "🍳"
+    },
+    {
+      "word": "Driver",
+      "tr": "драйвэ",
+      "ru": "водитель",
+      "emoji": "🚕"
+    },
+    {
+      "word": "Builder",
+      "tr": "билдэ",
+      "ru": "строитель",
+      "emoji": "🔨"
+    },
+    {
+      "word": "Seller",
+      "tr": "сэлэ",
+      "ru": "продавец",
+      "emoji": "🛒"
+    }
+  ]
+}

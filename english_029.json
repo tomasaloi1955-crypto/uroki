@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 29,
+  "topic": "Хобби",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Reading",
+      "tr": "ридинг",
+      "ru": "чтение",
+      "emoji": "📚"
+    },
+    {
+      "word": "Drawing",
+      "tr": "дроинг",
+      "ru": "рисование",
+      "emoji": "🎨"
+    },
+    {
+      "word": "Cooking",
+      "tr": "кукинг",
+      "ru": "готовка",
+      "emoji": "🍳"
+    },
+    {
+      "word": "Sport",
+      "tr": "спот",
+      "ru": "спорт",
+      "emoji": "⚽"
+    },
+    {
+      "word": "Music",
+      "tr": "мьюзик",
+      "ru": "музыка",
+      "emoji": "🎵"
+    },
+    {
+      "word": "Travel",
+      "tr": "трэвэл",
+      "ru": "путешествия",
+      "emoji": "✈️"
+    }
+  ]
+}

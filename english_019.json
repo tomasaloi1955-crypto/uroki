@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 19,
+  "topic": "Прилагательные",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Big",
+      "tr": "биг",
+      "ru": "большой",
+      "emoji": "🐘"
+    },
+    {
+      "word": "Small",
+      "tr": "смол",
+      "ru": "маленький",
+      "emoji": "🐭"
+    },
+    {
+      "word": "New",
+      "tr": "нью",
+      "ru": "новый",
+      "emoji": "✨"
+    },
+    {
+      "word": "Old",
+      "tr": "оулд",
+      "ru": "старый",
+      "emoji": "🏰"
+    },
+    {
+      "word": "Good",
+      "tr": "гуд",
+      "ru": "хороший",
+      "emoji": "👍"
+    },
+    {
+      "word": "Bad",
+      "tr": "бэд",
+      "ru": "плохой",
+      "emoji": "👎"
+    }
+  ]
+}

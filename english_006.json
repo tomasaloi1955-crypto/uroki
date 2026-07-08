@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 6,
+  "topic": "Семья",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Mother",
+      "tr": "мазэ",
+      "ru": "мама",
+      "emoji": "👩"
+    },
+    {
+      "word": "Father",
+      "tr": "фазэ",
+      "ru": "папа",
+      "emoji": "👨"
+    },
+    {
+      "word": "Sister",
+      "tr": "систэ",
+      "ru": "сестра",
+      "emoji": "👧"
+    },
+    {
+      "word": "Brother",
+      "tr": "бразэ",
+      "ru": "брат",
+      "emoji": "👦"
+    },
+    {
+      "word": "Grandmother",
+      "tr": "грэндмазэ",
+      "ru": "бабушка",
+      "emoji": "👵"
+    },
+    {
+      "word": "Grandfather",
+      "tr": "грэндфазэ",
+      "ru": "дедушка",
+      "emoji": "👴"
+    }
+  ]
+}

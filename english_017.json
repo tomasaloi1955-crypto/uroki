@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 17,
+  "topic": "Местоимения",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "I",
+      "tr": "ай",
+      "ru": "я",
+      "emoji": "🙋"
+    },
+    {
+      "word": "You",
+      "tr": "ю",
+      "ru": "ты, вы",
+      "emoji": "👉"
+    },
+    {
+      "word": "He",
+      "tr": "хи",
+      "ru": "он",
+      "emoji": "👦"
+    },
+    {
+      "word": "She",
+      "tr": "ши",
+      "ru": "она",
+      "emoji": "👧"
+    },
+    {
+      "word": "We",
+      "tr": "уи",
+      "ru": "мы",
+      "emoji": "👐"
+    },
+    {
+      "word": "They",
+      "tr": "зэй",
+      "ru": "они",
+      "emoji": "👥"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "course": "Английский для начинающих",
+  "lesson_number": 7,
+  "topic": "Животные",
+  "teacher": "Марьям",
+  "target_lang": "en",
+  "voice_ru": "ru-RU-SvetlanaNeural",
+  "voice_en": "en-GB-SoniaNeural",
+  "mascot": "🐱",
+  "items": [
+    {
+      "word": "Cat",
+      "tr": "кэт",
+      "ru": "кошка",
+      "emoji": "🐱"
+    },
+    {
+      "word": "Dog",
+      "tr": "дог",
+      "ru": "собака",
+      "emoji": "🐶"
+    },
+    {
+      "word": "Bird",
+      "tr": "бёд",
+      "ru": "птица",
+      "emoji": "🐦"
+    },
+    {
+      "word": "Fish",
+      "tr": "фиш",
+      "ru": "рыба",
+      "emoji": "🐟"
+    },
+    {
+      "word": "Horse",
+      "tr": "хос",
+      "ru": "лошадь",
+      "emoji": "🐴"
+    },
+    {
+      "word": "Rabbit",
+      "tr": "рэбит",
+      "ru": "кролик",
+      "emoji": "🐰"
+    }
+  ]
+}
