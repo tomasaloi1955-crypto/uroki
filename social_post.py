@@ -73,6 +73,18 @@ def yt_upload(video: Path, title: str, description: str, tags):
     return vid
 
 
+def yt_set_thumbnail(video_id: str, thumb: Path):
+    token = yt_access_token()
+    r = requests.post(
+        "https://www.googleapis.com/upload/youtube/v3/thumbnails/set",
+        params={"videoId": video_id},
+        headers={"Authorization": f"Bearer {token}",
+                 "Content-Type": "image/jpeg"},
+        data=thumb.read_bytes(), timeout=120)
+    r.raise_for_status()
+    log(f"Обложка установлена: {video_id}")
+
+
 # ---------------- Telegram ----------------
 
 def tg_send_video(video: Path, caption: str):
@@ -195,9 +207,22 @@ def main():
              f'#{lang_tag} #урок{n}')
     tags = [lang_tag, f"{lang_tag} язык", f"уроки {lang_tag[:-2]}ого", lesson["topic"]]
 
-    # Длинное видео
+    # Обложка урока (в фирменном стиле канала)
+    thumb = None
+    try:
+        subprocess.run([sys.executable, "make_thumb.py", str(lesson_json)], check=True)
+        thumb = bdir / "thumb.jpg"
+    except Exception as e:
+        log(f"Обложка не собралась (не страшно): {e}")
+
+    # Длинное видео + обложка
     if has("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
-        try_post(yt_upload, "YouTube", long_video, title, descr, tags)
+        try:
+            vid = yt_upload(long_video, title, descr, tags)
+            if thumb and thumb.exists():
+                try_post(yt_set_thumbnail, "Обложка", vid, thumb)
+        except Exception as e:
+            log(f"YouTube ПРОПУЩЕН: {e}")
     tg_file_ids = {}
     if has("TG_BOT_TOKEN", "TG_CHAT_ID"):
         try:
