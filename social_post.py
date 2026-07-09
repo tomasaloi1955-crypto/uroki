@@ -159,6 +159,14 @@ def try_post(fn, label, *args):
 
 
 def main():
+    # Ни одна площадка не настроена -> не тратим урок впустую
+    if not (has("TG_BOT_TOKEN", "TG_CHAT_ID")
+            or has("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN")
+            or has("IG_TOKEN", "IG_USER_ID") or has("TIKTOK_TOKEN")):
+        log("Секреты площадок не настроены — пропускаю день. "
+            "См. GITHUB_SETUP.md, шаги 2-6.")
+        return
+
     state = json.loads(STATE.read_text(encoding="utf-8"))
     n = state["next_lesson"]
     prefix = state.get("prefix", "arabic")
