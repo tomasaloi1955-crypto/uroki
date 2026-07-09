@@ -187,6 +187,12 @@ def main():
         log(f"{lesson_json} нет — курс закончился, делать нечего.")
         return
 
+    # Защита от дублей: этот урок уже публиковался — не постим второй раз
+    posted = state.setdefault("posted", [])
+    if f"{prefix}_{n}" in posted:
+        log(f"Урок {n} уже публиковался — пропускаю, чтобы не было дубля.")
+        return
+
     lesson = json.loads(lesson_json.read_text(encoding="utf-8"))
     log(f"Урок {n}: {lesson['topic']}")
 
@@ -250,7 +256,8 @@ def main():
         if has("TIKTOK_TOKEN"):
             try_post(tiktok_post, "TikTok", sv, cap.splitlines()[0])
 
-    # Сдвигаем счётчик
+    # Сдвигаем счётчик и запоминаем, что урок опубликован
+    posted.append(f"{prefix}_{n}")
     state["next_lesson"] = n + 1
     STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
                      encoding="utf-8")

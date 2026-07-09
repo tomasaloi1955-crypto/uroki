@@ -1,4 +1,7 @@
 {
   "prefix": "arabic",
-  "next_lesson": 2
+  "next_lesson": 2,
+  "posted": [
+    "arabic_1"
+  ]
 }
