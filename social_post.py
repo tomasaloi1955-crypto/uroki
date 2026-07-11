@@ -163,6 +163,22 @@ def has(*names):
     return all(os.environ.get(n) for n in names)
 
 
+def commit_state(state, msg):
+    """Сохраняет журнал в репозиторий СРАЗУ (до загрузки видео):
+    если запуск оборвётся на середине, повтор не создаст дублей."""
+    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
+                     encoding="utf-8")
+    if not os.environ.get("GITHUB_ACTIONS"):
+        return  # локальный запуск — коммитит человек
+    for cmd in (["git", "config", "user.name", "autopost-bot"],
+                ["git", "config", "user.email", "bot@users.noreply.github.com"],
+                ["git", "add", str(STATE)],
+                ["git", "commit", "-m", msg],
+                ["git", "pull", "--rebase"],
+                ["git", "push"]):
+        subprocess.run(cmd, check=False)
+
+
 def try_post(fn, label, *args):
     try:
         fn(*args)
@@ -221,6 +237,11 @@ def main():
     except Exception as e:
         log(f"Обложка не собралась (не страшно): {e}")
 
+    # Сборка удалась — фиксируем публикацию ДО загрузки (защита от дублей)
+    posted.append(f"{prefix}_{n}")
+    state["next_lesson"] = n + 1
+    commit_state(state, f"Урок {n}: публикация начата, счётчик +1")
+
     # Длинное видео + обложка
     if has("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
         try:
@@ -256,11 +277,6 @@ def main():
         if has("TIKTOK_TOKEN"):
             try_post(tiktok_post, "TikTok", sv, cap.splitlines()[0])
 
-    # Сдвигаем счётчик и запоминаем, что урок опубликован
-    posted.append(f"{prefix}_{n}")
-    state["next_lesson"] = n + 1
-    STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
-                     encoding="utf-8")
     log(f"Готово. Завтра — урок {n + 1}.")
 
 

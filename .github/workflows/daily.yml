@@ -24,9 +24,15 @@ jobs:
           python-version: "3.11"
 
       - name: Устанавливаем ffmpeg и шрифты (арабский + эмодзи)
+        timeout-minutes: 12   # зависшие зеркала Ubuntu не съедают весь лимит
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg fonts-noto-core fonts-noto-color-emoji
+          for i in 1 2 3; do
+            sudo apt-get update -q && \
+            sudo apt-get install -y -q --no-install-recommends \
+              ffmpeg fonts-noto-core fonts-noto-color-emoji && break
+            echo "попытка $i не удалась, жду 20 сек..."; sleep 20
+          done
+          ffmpeg -version | head -1
 
       - name: Устанавливаем python-библиотеки
         run: pip install edge-tts pillow arabic-reshaper python-bidi requests
