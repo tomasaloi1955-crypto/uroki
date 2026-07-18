@@ -1,6 +1,7 @@
 build/
 client_secret.json
 token.json
+youtube_token.json
 tiktok_token.json
 TIKTOK_TODAY/
 *.log
