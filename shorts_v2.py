@@ -32,10 +32,17 @@ GOLD = (222, 184, 74)
 UA = "ArabicShortsPipeline/1.0 (educational channel)"
 OUT_DIR = Path("build") / "shorts_v2"
 
-FONT_BOLD = ["C:/Windows/Fonts/arialbd.ttf"]
-FONT_REG = ["C:/Windows/Fonts/arial.ttf"]
+# Пути и для Windows, и для Linux (GitHub Actions: fonts-noto-core + dejavu)
+FONT_BOLD = ["C:/Windows/Fonts/arialbd.ttf",
+             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
+FONT_REG = ["C:/Windows/Fonts/arial.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
 # Для крупной арабской вязи Traditional Arabic красивее, Arial — запасной
-FONT_AR = ["C:/Windows/Fonts/tradbdo.ttf", "C:/Windows/Fonts/arialbd.ttf"]
+FONT_AR = ["C:/Windows/Fonts/tradbdo.ttf", "C:/Windows/Fonts/arialbd.ttf",
+           "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Bold.ttf",
+           "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Regular.ttf",
+           "/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf",
+           "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
 
 # hook — крючок сверху, ar — арабское слово, translit — строка под ним,
 # teach — обучающая фраза для озвучки, cta — призыв, themes — поиск фонов

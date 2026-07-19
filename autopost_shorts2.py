@@ -14,6 +14,7 @@
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -62,9 +63,15 @@ def main():
 
     title, desc = meta(n)
     print(f"YouTube: урок {n} — «{title}»")
-    from upload_youtube import upload_video
-    upload_video(video, title, desc,
-                 tags=["арабский", "арабский язык", "с нуля", "shorts"])
+    tags = ["арабский", "арабский язык", "с нуля", "shorts"]
+    if all(os.environ.get(k) for k in
+           ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN")):
+        # Облако (GitHub Actions): доступ по секретам, без файлов токенов
+        from social_post import yt_upload
+        yt_upload(video, title, desc, tags)
+    else:
+        from upload_youtube import upload_video
+        upload_video(video, title, desc, tags)
     if n not in st["posted"]:
         st["posted"].append(n)
     save_state(st)
