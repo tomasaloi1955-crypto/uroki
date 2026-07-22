@@ -274,7 +274,14 @@ LESSONS = {
 def pick_font(candidates, size):
     for p in candidates:
         if Path(p).exists():
-            return ImageFont.truetype(p, size)
+            # layout_engine=BASIC: мы уже сами разворачиваем арабский текст
+            # через arabic_reshaper+get_display. Там, где Pillow собран с
+            # raqm (Linux/GitHub Actions), движок RAQM сделал бы это ещё
+            # раз поверх нашей раскладки — текст съезжал бы обратно
+            # слева направо. BASIC просто рисует символы в заданном
+            # порядке, без повторной bidi-обработки.
+            return ImageFont.truetype(p, size,
+                                      layout_engine=ImageFont.Layout.BASIC)
     return ImageFont.load_default()
 
 
