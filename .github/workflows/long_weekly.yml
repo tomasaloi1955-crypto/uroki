@@ -1,0 +1,55 @@
+name: Длинное видео (3 раза в неделю)
+
+on:
+  schedule:
+    - cron: "0 9 * * 1,3,5"   # 09:00 UTC = 12:00 по времени пользователя (UTC+3), пн/ср/пт
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: long-weekly
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Устанавливаем ffmpeg и шрифты (кириллица + арабская вязь)
+        timeout-minutes: 12
+        run: |
+          for i in 1 2 3; do
+            sudo apt-get update -q && \
+            sudo apt-get install -y -q --no-install-recommends \
+              ffmpeg fonts-noto-core fonts-dejavu-core && break
+            echo "попытка $i не удалась, жду 20 сек..."; sleep 20
+          done
+          ffmpeg -version | head -1
+
+      - name: Устанавливаем python-библиотеки
+        run: pip install pillow arabic-reshaper python-bidi requests
+
+      - name: Собираем серию дня и постим на YouTube
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python autopost_long.py
+
+      - name: Сохраняем журнал публикаций
+        run: |
+          git config user.name "autopost-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add long_state.json
+          git diff --cached --quiet || git commit -m "Серия опубликована, очередь +1"
+          git push

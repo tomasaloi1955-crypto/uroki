@@ -71,6 +71,18 @@ def upload_video(path, title, description="", tags=None, privacy="public"):
     return vid
 
 
+def set_thumbnail(video_id: str, thumb_path):
+    """Ставит кастомную обложку — только для длинных видео (не для shorts)."""
+    from googleapiclient.http import MediaFileUpload
+
+    yt = get_service()
+    yt.thumbnails().set(
+        videoId=video_id,
+        media_body=MediaFileUpload(str(thumb_path), mimetype="image/jpeg"),
+    ).execute()
+    print(f"  Обложка установлена для {video_id}")
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 3:
