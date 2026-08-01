@@ -291,9 +291,13 @@ def ar_text(s):
 
 
 def strip_accents(s):
-    """Убирает ударения-диакритики: TTS читает их с ошибками."""
-    return "".join(ch for ch in unicodedata.normalize("NFD", s)
-                   if not unicodedata.combining(ch))
+    """Убирает знак ударения (U+0301): TTS читает его с ошибками.
+    Снимаем через NFD только сам акут и возвращаем NFC — если убирать
+    ВСЕ комбинирующие знаки без разбора, "й" (= "и" + краткая) тоже
+    разваливается и превращается в "и", ломая слово."""
+    decomposed = unicodedata.normalize("NFD", s)
+    return unicodedata.normalize(
+        "NFC", "".join(ch for ch in decomposed if ch != "́"))
 
 
 def split_word_occurrences(text, word, ar_word):
@@ -312,6 +316,46 @@ def split_word_occurrences(text, word, ar_word):
     return segs
 
 
+# Связующие фразы варьируются по уроку (см. _pick), чтобы 30 роликов
+# подряд не звучали как один и тот же шаблон — меняется только текст,
+# сама схема произношения арабского слова (split_word_occurrences +
+# synthesize_plan) не зависит от того, какая фраза выбрана.
+INTRO_PHRASES = [
+    "Слушай, как это звучит по-арабски",
+    "Вот как это произносится по-арабски",
+    "А теперь — настоящее арабское произношение",
+    "Слушай внимательно, как звучит это слово по-арабски",
+]
+REPEAT_PHRASES = [
+    "Повторим ещё раз",
+    "Ещё раз, внимательно",
+    "И снова, чтобы запомнить",
+    "Послушай ещё раз",
+]
+MEANING_LEADS = [
+    "Запомни",
+    "Не забудь",
+    "Возьми на заметку",
+    "Держи в памяти",
+]
+ASK_PHRASES = [
+    "А теперь скажи вслух",
+    "Твоя очередь — скажи вслух",
+    "Попробуй произнести сам",
+    "А теперь повтори за мной вслух",
+]
+OUTRO_PHRASES = [
+    "Отлично, у тебя получается!",
+    "Здорово, у тебя получилось!",
+    "Супер, ты справляешься!",
+    "Молодец, продолжай в том же духе!",
+]
+
+
+def _pick(options, n, salt):
+    return options[(n * 7 + salt) % len(options)]
+
+
 def tts_plan(n, lesson):
     """Развёрнутый сценарий озвучки как список чередующихся сегментов
     ru/ar. Текст собирается как раньше, с транслитом на месте слова —
@@ -324,15 +368,25 @@ def tts_plan(n, lesson):
     Голосовое «подпишись» — через ролик (в каждом втором), чтобы не
     надоедало; на экране призыв есть всегда."""
     parts = [p.strip() for p in strip_accents(lesson["translit"]).split("—")]
-    word = parts[0].rstrip("!?.")
+    # rstrip("-") отдельно: у урока 8 ("Аль-") конечный дефис ломает
+    # \b-границу регулярки всякий раз, когда после слова идёт знак
+    # препинания или конец фразы (а не следующая буква) — совпадение
+    # находилось только внутри "Аль-Китаб", а не в служебных фразах.
+    word = parts[0].rstrip("!?.").rstrip("-")
     meaning = parts[1] if len(parts) > 1 else ""
 
-    s = f'{lesson["hook"]}. Слушай, как это звучит по-арабски: {word}.'
+    intro = _pick(INTRO_PHRASES, n, 0)
+    repeat = _pick(REPEAT_PHRASES, n, 1)
+    meaning_lead = _pick(MEANING_LEADS, n, 2)
+    ask = _pick(ASK_PHRASES, n, 3)
+    outro = _pick(OUTRO_PHRASES, n, 4)
+
+    s = f'{lesson["hook"]}. {intro}: {word}.'
     s += f' {lesson["teach"]}'
-    s += f' Повторим ещё раз: {word}.'
+    s += f' {repeat}: {word}.'
     if meaning:
-        s += f' Запомни: {word} — значит «{meaning}».'
-    s += f' А теперь скажи вслух: {word}. Отлично, у тебя получается!'
+        s += f' {meaning_lead}: {word} — значит «{meaning}».'
+    s += f' {ask}: {word}. {outro}'
     if n % 2 == 0:
         s += f' {lesson["cta"]}'
 
