@@ -13,6 +13,7 @@
 
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -295,30 +296,47 @@ def strip_accents(s):
                    if not unicodedata.combining(ch))
 
 
-def tts_text(n, lesson):
-    """Развёрнутый сценарий озвучки: повторы слова, паузы, ровный темп.
+def split_word_occurrences(text, word, ar_word):
+    """Режет текст на чередующиеся сегменты [("ru", кусок), ("ar", слово)]
+    по каждому вхождению транслитерированного word (границы слова, без
+    учёта регистра), заменяя его на арабское произношение."""
+    if not word:
+        return [("ru", text)] if text.strip() else []
+    parts = re.split(r"\b(" + re.escape(word) + r")\b", text, flags=re.IGNORECASE)
+    segs = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            segs.append(("ar", ar_word))
+        elif part.strip():
+            segs.append(("ru", part))
+    return segs
 
-    Слово произносится настоящей арабской вязью (lesson["ar"]), а не
-    кириллической транслитерацией — иначе ElevenLabs читает её
-    русским произношением и арабское слово звучит неверно. Транслит
-    остаётся только на экране и в тексте объяснения (lesson["teach"])
-    как подсказка для чтения.
+
+def tts_plan(n, lesson):
+    """Развёрнутый сценарий озвучки как список чередующихся сегментов
+    ru/ar. Текст собирается как раньше, с транслитом на месте слова —
+    но КАЖДОЕ его вхождение (в том числе внутри lesson["teach"]) потом
+    заменяется на сегмент с настоящим арабским словом. Одно и то же
+    арабское аудио синтезируется один раз и переиспользуется на всех
+    повторах: если просить ElevenLabs повторить слово несколько раз
+    внутри одной генерации, произношение после первого раза плывёт.
 
     Голосовое «подпишись» — через ролик (в каждом втором), чтобы не
     надоедало; на экране призыв есть всегда."""
     parts = [p.strip() for p in strip_accents(lesson["translit"]).split("—")]
+    word = parts[0].rstrip("!?.")
     meaning = parts[1] if len(parts) > 1 else ""
-    ar_word = lesson["ar"]
 
-    s = f'{lesson["hook"]}. Слушай, как это звучит по-арабски: {ar_word}.'
+    s = f'{lesson["hook"]}. Слушай, как это звучит по-арабски: {word}.'
     s += f' {lesson["teach"]}'
-    s += f' Повторим ещё раз: {ar_word}.'
+    s += f' Повторим ещё раз: {word}.'
     if meaning:
-        s += f' Запомни: {ar_word} — значит «{meaning}».'
-    s += f' А теперь скажи вслух: {ar_word}. Отлично, у тебя получается!'
+        s += f' Запомни: {word} — значит «{meaning}».'
+    s += f' А теперь скажи вслух: {word}. Отлично, у тебя получается!'
     if n % 2 == 0:
         s += f' {lesson["cta"]}'
-    return s
+
+    return split_word_occurrences(s, word, lesson["ar"])
 
 
 def run(*cmd):
@@ -354,6 +372,36 @@ def elevenlabs_tts(text, out_mp3: Path):
     )
     with urllib.request.urlopen(req, timeout=120) as r:
         out_mp3.write_bytes(r.read())
+
+
+def synthesize_plan(plan, out_mp3: Path, work: Path):
+    """Синтезирует план [("ru"|"ar", текст)] по сегментам и склеивает
+    их через ffmpeg. Одинаковые сегменты (в первую очередь — арабское
+    слово, которое повторяется несколько раз) синтезируются только
+    один раз и переиспользуются, чтобы произношение было одинаково
+    чистым на каждом повторе."""
+    cache = {}
+    clips = []
+    silence = work / "_silence.mp3"
+    if not silence.exists():
+        ffmpeg("-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+               "-t", "0.35", "-q:a", "9", str(silence))
+
+    for i, (kind, text) in enumerate(plan):
+        if text not in cache:
+            clip = work / f"_seg_{kind}_{len(cache):02d}.mp3"
+            if not clip.exists():
+                elevenlabs_tts(text, clip)
+            cache[text] = clip
+        clips.append(cache[text])
+        clips.append(silence)
+
+    cmd = []
+    for c in clips:
+        cmd += ["-i", str(c)]
+    n = len(clips)
+    filt = "".join(f"[{i}:a]" for i in range(n)) + f"concat=n={n}:v=0:a=1[out]"
+    ffmpeg(*cmd, "-filter_complex", filt, "-map", "[out]", str(out_mp3))
 
 
 # ---------- фоновые ролики ----------
@@ -584,7 +632,7 @@ def build_short(n: int):
     voice = work / "voice.mp3"
     if not voice.exists():
         print("  озвучка ElevenLabs...")
-        elevenlabs_tts(tts_text(n, lesson), voice)
+        synthesize_plan(tts_plan(n, lesson), voice, work)
     total = probe_duration(voice) + 1.5
 
     overlay = work / "overlay.png"
