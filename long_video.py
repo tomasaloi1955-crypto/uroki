@@ -16,6 +16,7 @@
 
 import json
 import os
+import re
 import time
 import urllib.request
 from pathlib import Path
@@ -67,6 +68,53 @@ def elevenlabs_tts_slow(text: str, out_mp3: Path):
                   f"жду и пробую снова...")
             time.sleep(10)
     raise last_err
+
+
+# Служебные частицы, которые повторяются из урока в урок и не всегда
+# попадают в lines/ar_big/bullets в чистом виде для авторазбора.
+SEED_AR_VOCAB = {"ма": "ما", "хал": "هل", "наам": "نعم", "ля": "لا"}
+
+
+def build_ar_vocab(scenes):
+    """Собирает словарь транслит-слово -> арабское написание из lines/
+    ar_big/bullets всего эпизода (там уже есть верные пары "как
+    произносится" <-> "как пишется" для слов, которые проходят в
+    уроке)."""
+    vocab = dict(SEED_AR_VOCAB)
+
+    def add_pair(ar_phrase, ru_phrase):
+        ar_words = ar_phrase.replace("؟", "").replace("?", "").split()
+        # strip_accents(): ключи должны совпадать со словами уже после
+        # той же нормализации, что применяется к тексту озвучки (иначе
+        # "бейт" не найдёт "беит" после вычитания диакритики из "й").
+        ru_words = strip_accents(ru_phrase).split("—")[0].strip().split()
+        if len(ar_words) != len(ru_words):
+            return
+        for aw, rw in zip(ar_words, ru_words):
+            key = rw.strip(",.!?").lower()
+            if key and key not in vocab:
+                vocab[key] = aw
+
+    for sc in scenes:
+        if sc.get("ar_big") and sc.get("sub"):
+            add_pair(sc["ar_big"], sc["sub"])
+        for ar, ru in sc.get("lines", []):
+            add_pair(ar, ru)
+        for ar, ru in sc.get("bullets", []):
+            add_pair(ar, ru)
+    return vocab
+
+
+def arabize(text, vocab):
+    """Вставляет настоящее арабское произношение рядом с транслитом:
+    ElevenLabs иначе читает кириллическую транслитерацию русским
+    произношением, и арабские слова на обучающем канале звучат
+    неверно."""
+    pattern = re.compile(
+        r"\b(" + "|".join(re.escape(w) for w in vocab) + r")\b",
+        re.IGNORECASE)
+    return pattern.sub(lambda m: f"{m.group(0)} ({vocab[m.group(0).lower()]})",
+                        text)
 
 
 # ---------- эпизоды (оригинальный контент, методика курса, не пересказ книги) ----------
@@ -469,10 +517,11 @@ def draw_scene(scene: dict, out_png: Path):
 
 # ---------- сборка ----------
 
-def build_scene_clip(scene: dict, idx: int, work: Path) -> Path:
+def build_scene_clip(scene: dict, idx: int, work: Path, vocab: dict) -> Path:
     voice = work / f"voice_{idx:02d}.mp3"
     if not voice.exists():
-        elevenlabs_tts_slow(strip_accents(scene["speech"]), voice)
+        speech = arabize(strip_accents(scene["speech"]), vocab)
+        elevenlabs_tts_slow(speech, voice)
     dur = probe_duration(voice) + 1.0
 
     png = work / f"overlay_{idx:02d}.png"
@@ -491,25 +540,49 @@ def build_scene_clip(scene: dict, idx: int, work: Path) -> Path:
 
 
 def build_episode(n: int) -> Path:
+    """Копим готовые сцены и склеиваем их ОДИН раз в конце (быстро,
+    O(n)) — не на каждом шаге (это давало O(n^2): каждый повторный
+    прогон переписывал уже накопленный файл целиком, и склейка
+    затягивалась на часы). От вытеснения старых файлов песочницей
+    защищаемся иначе — "подогреваем" уже готовые клипы (обновляем
+    время модификации), чтобы они не выглядели устаревшими."""
     ep = EPISODES[n]
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     work = OUT_DIR / f"work_{n:02d}"
     work.mkdir(exist_ok=True)
     print(f"Эпизод {n}: {ep['title']}")
+    vocab = build_ar_vocab(ep["scenes"])
 
     clips = []
     for i, scene in enumerate(ep["scenes"]):
         print(f"  сцена {i + 1}/{len(ep['scenes'])}: "
               f"{scene.get('title') or scene.get('sub') or scene['theme']}")
-        clips.append(build_scene_clip(scene, i, work))
+        clips.append(build_scene_clip(scene, i, work, vocab))
+
+        # Промежуточные файлы сцены (фото/фон/оверлей) больше не нужны —
+        # освобождаем место, не дожидаясь конца сборки.
+        for pat in (f"bg_{i:02d}.mp4", f"photo_{i:02d}.img",
+                   f"overlay_{i:02d}.png"):
+            p = work / pat
+            if p.exists():
+                p.unlink()
+
+        # "Подогреваем" уже готовые клипы сцен, чтобы не выглядели
+        # старыми файлами и не попали под возможную чистку песочницы.
+        for c in clips:
+            c.touch()
 
     lst = work / "concat.txt"
     lst.write_text("\n".join(f"file '{c.resolve().as_posix()}'" for c in clips),
                    encoding="utf-8")
     out = OUT_DIR / f"episode_{n:02d}.mp4"
-    ffmpeg("-f", "concat", "-safe", "0", "-i", str(lst),
-           "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
-           "-c:a", "aac", "-b:a", "160k", str(out))
+    ffmpeg("-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(out))
+    if not (out.exists() and out.stat().st_size > 100_000):
+        # На случай рассинхронизации кодеков между клипами — надёжный,
+        # но более медленный путь с перекодированием.
+        ffmpeg("-f", "concat", "-safe", "0", "-i", str(lst),
+               "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p",
+               "-c:a", "aac", "-b:a", "160k", str(out))
 
     total = probe_duration(out)
     (OUT_DIR / f"episode_{n:02d}.txt").write_text(
