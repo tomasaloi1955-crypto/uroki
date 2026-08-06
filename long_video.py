@@ -14,6 +14,7 @@
 Результат: build/long/episode_NN.mp4 + episode_NN.txt (описание для YouTube)
 """
 
+import hashlib
 import json
 import os
 import re
@@ -105,16 +106,65 @@ def build_ar_vocab(scenes):
     return vocab
 
 
-def arabize(text, vocab):
-    """Вставляет настоящее арабское произношение рядом с транслитом:
-    ElevenLabs иначе читает кириллическую транслитерацию русским
-    произношением, и арабские слова на обучающем канале звучат
-    неверно."""
+def split_vocab_occurrences(text, vocab):
+    """Режет текст на чередующиеся сегменты [("ru", кусок), ("ar", слово)]
+    по каждому словарному слову (границы слова, без учёта регистра) —
+    как split_word_occurrences в shorts_v2.py, но сразу для НЕСКОЛЬКИХ
+    разных арабских слов (в сцене длинного видео их обычно не одно)."""
+    if not vocab or not text.strip():
+        return [("ru", text)] if text.strip() else []
     pattern = re.compile(
-        r"\b(" + "|".join(re.escape(w) for w in vocab) + r")\b",
+        r"\b(" + "|".join(re.escape(w) for w in
+                          sorted(vocab, key=len, reverse=True)) + r")\b",
         re.IGNORECASE)
-    return pattern.sub(lambda m: f"{m.group(0)} ({vocab[m.group(0).lower()]})",
-                        text)
+    segs = []
+    pos = 0
+    for m in pattern.finditer(text):
+        chunk = text[pos:m.start()]
+        if chunk.strip():
+            segs.append(("ru", chunk))
+        segs.append(("ar", vocab[m.group(0).lower()]))
+        pos = m.end()
+    tail = text[pos:]
+    if tail.strip():
+        segs.append(("ru", tail))
+    return segs
+
+
+def synthesize_plan_slow(plan, out_mp3: Path, work: Path):
+    """Синтезирует план [("ru"|"ar", текст)] по сегментам и склеивает их
+    через ffmpeg — вместо одного запроса на всю реплику сцены целиком.
+    Так и арабские слова звучат одинаково чисто на каждом повторе (без
+    "плывущего" произношения ElevenLabs при повторах внутри одной
+    генерации), и русская речь не торопится/не наезжает сама на себя —
+    что случалось, когда модели приходилось на лету переключаться между
+    транслитом и арабской вязью посреди одного предложения.
+
+    Кэш сегментов — по хэшу текста, а не по порядковому номеру: разные
+    сцены одного эпизода делят один work/, и одно и то же слово может
+    встретиться в нескольких сценах — тогда оно синтезируется единожды
+    на весь эпизод."""
+    if not plan:
+        plan = [("ru", "")]
+    clips = []
+    silence = work / "_silence.mp3"
+    if not silence.exists():
+        ffmpeg("-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+               "-t", "0.35", "-q:a", "9", str(silence))
+    for kind, text in plan:
+        key = hashlib.md5(f"{kind}:{text}".encode("utf-8")).hexdigest()[:12]
+        clip = work / f"_seg_{key}.mp3"
+        if not clip.exists():
+            elevenlabs_tts_slow(text, clip)
+        clips.append(clip)
+        clips.append(silence)
+
+    cmd = []
+    for c in clips:
+        cmd += ["-i", str(c)]
+    n = len(clips)
+    filt = "".join(f"[{i}:a]" for i in range(n)) + f"concat=n={n}:v=0:a=1[out]"
+    ffmpeg(*cmd, "-filter_complex", filt, "-map", "[out]", str(out_mp3))
 
 
 # ---------- эпизоды (оригинальный контент, методика курса, не пересказ книги) ----------
@@ -389,7 +439,7 @@ def kenburns_clip_landscape(img: Path, seg_dur, out: Path, zoom_in=True) -> bool
 def fallback_clip_landscape(seg_dur, out: Path):
     ffmpeg("-f", "lavfi",
            "-i", (f"gradients=size={LW}x{LH}:speed=0.02:nb_colors=3:"
-                  "c0=0x0E573E:c1=0xDEB84A:c2=0x083D2B"),
+                  "c0=0xE8D9B5:c1=0xC9A876:c2=0xF3E9D2"),
            "-t", f"{seg_dur:.2f}", "-r", "30",
            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
            "-pix_fmt", "yuv420p", str(out))
@@ -520,8 +570,8 @@ def draw_scene(scene: dict, out_png: Path):
 def build_scene_clip(scene: dict, idx: int, work: Path, vocab: dict) -> Path:
     voice = work / f"voice_{idx:02d}.mp3"
     if not voice.exists():
-        speech = arabize(strip_accents(scene["speech"]), vocab)
-        elevenlabs_tts_slow(speech, voice)
+        plan = split_vocab_occurrences(strip_accents(scene["speech"]), vocab)
+        synthesize_plan_slow(plan, voice, work)
     dur = probe_duration(voice) + 1.0
 
     png = work / f"overlay_{idx:02d}.png"

@@ -419,9 +419,11 @@ def elevenlabs_tts(text, out_mp3: Path):
         "?output_format=mp3_44100_128",
         data=json.dumps({"text": text,
                          "model_id": "eleven_multilingual_v2",
-                         # Повыше стабильность — меньше оговорок и глюков
-                         "voice_settings": {"stability": 0.6,
-                                            "similarity_boost": 0.75}}).encode(),
+                         # Повыше стабильность — меньше оговорок и глюков;
+                         # speed<1 — не тараторит и не глотает окончания
+                         "voice_settings": {"stability": 0.72,
+                                            "similarity_boost": 0.75,
+                                            "speed": 0.85}}).encode(),
         headers={"xi-api-key": key, "Content-Type": "application/json"},
     )
     with urllib.request.urlopen(req, timeout=120) as r:
@@ -557,7 +559,7 @@ def fallback_clip(seg_dur, out: Path):
     """Если сток не нашёлся — фирменный анимированный градиент."""
     ffmpeg("-f", "lavfi",
            "-i", ("gradients=size=1080x1920:speed=0.02:nb_colors=3:"
-                  "c0=0x0E573E:c1=0xDEB84A:c2=0x083D2B"),
+                  "c0=0xE8D9B5:c1=0xC9A876:c2=0xF3E9D2"),
            "-t", f"{seg_dur:.2f}", "-r", "30",
            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
            "-pix_fmt", "yuv420p", str(out))
