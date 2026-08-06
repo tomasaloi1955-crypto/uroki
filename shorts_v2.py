@@ -466,14 +466,27 @@ BAD_WORDS = ("bombing", "bomb", "attack", "war", "riot", "protest",
              "damage", "rubble", "demolit", "flood", "earthquake", "strike",
              "arson", "vandal", "clash", "president", "potus", "minister")
 
+# Канал об исламе и арабском языке — христианские/библейские сюжеты
+# (иконы, храмы, распятия и т.п.) на фоне звучат неуместно, исключаем всегда.
+CHRISTIAN_WORDS = ("church", "cathedral", "chapel", "basilica", "monastery",
+                    "convent", "crucifix", "crucifixion", "christ", "jesus",
+                    "bible", "biblical", "gospel", "christian", "christma",
+                    "nativity", "madonna", "nun", "priest", "pope", "vatican",
+                    "saint", "icon", "orthodox", "catholic", "cross", "angel")
+BAD_WORDS = BAD_WORDS + CHRISTIAN_WORDS
+
 
 def commons_image_urls(term, limit=8):
     """Ищет фотографии на Wikimedia Commons, отдаёт URL уменьшенных копий.
 
     Видео на Commons — в основном хроника и новости, а фото мечетей и
     пустынь много профессиональных. Из фото делаем кен-бёрнс.
-    Берём thumb-версии (iiurlheight) — так просят сами Wikimedia."""
-    search = " ".join(f"intitle:{w}" for w in term.split()) + " filetype:bitmap"
+    Берём thumb-версии (iiurlheight) — так просят сами Wikimedia.
+    Христианские/библейские сюжеты исключаем прямо в запросе (канал об
+    исламе), чтобы такие фото вообще не попадали в выдачу."""
+    exclude = " ".join(f"-intitle:{w}" for w in CHRISTIAN_WORDS)
+    search = (" ".join(f"intitle:{w}" for w in term.split())
+              + " filetype:bitmap " + exclude)
     q = urllib.parse.urlencode({
         "action": "query", "format": "json", "generator": "search",
         "gsrnamespace": "6", "gsrsearch": search, "gsrlimit": limit,
