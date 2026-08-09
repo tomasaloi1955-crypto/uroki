@@ -95,27 +95,27 @@ LESSONS = {
     19: dict(hook="Слово дня: Человек", ar="إنسان", translit="Инса́н — человек",
              teach="Человек — это звучит гордо. Человек по-арабски — Инсан. Повтори: Инсан.",
              cta="Подпишись на канал!",
-             themes=["silhouette person sunset", "people walking"]),
+             themes=["footprints sand desert", "desert horizon sunrise"]),
     20: dict(hook="Слово дня: Друг", ar="صديق", translit="Сади́к — друг",
              teach="Друг познаётся в беде. Друг по-арабски — Садик. Запоминай: Садик.",
              cta="Отправь другу!",
-             themes=["friends laughing", "handshake"]),
+             themes=["arabic coffee", "tea pouring glass"]),
     21: dict(hook="Слово дня: Мама", ar="أم", translit="Умм — мама",
              teach="Мама — самое важное слово. Мама по-арабски — Умм. Повтори: Умм.",
              cta="Ставь лайк, если любишь маму!",
-             themes=["mother child", "family walking"]),
+             themes=["red rose garden", "cozy house interior"]),
     22: dict(hook="Слово дня: Папа", ar="أب", translit="Аб — папа",
              teach="Отец — опора семьи. Папа по-арабски — Аб. Повтори: Аб.",
              cta="Подпишись на канал!",
-             themes=["father child", "family"]),
+             themes=["old wooden door morocco", "compass vintage"]),
     23: dict(hook="Слово дня: Брат", ar="أخ", translit="Ах — брат",
              teach="Брат за брата. Брат по-арабски — Ах. Запоминай: Ах.",
              cta="Отправь брату!",
-             themes=["brothers", "children playing"]),
+             themes=["two camels desert", "bridge stone arch"]),
     24: dict(hook="Слово дня: Сестра", ar="أخت", translit="Ухт — сестра",
              teach="Сестра — лучшая подруга. Сестра по-арабски — Ухт. Повтори: Ухт.",
              cta="Отправь сестре!",
-             themes=["sisters", "children smiling"]),
+             themes=["two roses garden", "butterflies pair"]),
     25: dict(hook="Слово дня: Яблоко", ar="تفاح", translit="Туффа́х — яблоко",
              teach="Яблоко в день — и доктор не нужен. Яблоко по-арабски — Туффах. Запоминай: Туффах.",
              cta="Ставь лайк, если любишь яблоки!",
@@ -303,7 +303,13 @@ def strip_accents(s):
 def split_word_occurrences(text, word, ar_word):
     """Режет текст на чередующиеся сегменты [("ru", кусок), ("ar", слово)]
     по каждому вхождению транслитерированного word (границы слова, без
-    учёта регистра), заменяя его на арабское произношение."""
+    учёта регистра), заменяя его на арабское произношение.
+
+    Кусок из одних знаков препинания (когда арабское слово стоит сразу
+    после запятой/точки) в TTS не отправляем — ElevenLabs озвучивает
+    голый "." или "," каким-то посторонним звуком, отсюда были
+    случайные огрехи в русской речи. Пауза между сегментами и так есть
+    (тишина в synthesize_plan), отдельное озвучивание знака не нужно."""
     if not word:
         return [("ru", text)] if text.strip() else []
     parts = re.split(r"\b(" + re.escape(word) + r")\b", text, flags=re.IGNORECASE)
@@ -311,7 +317,7 @@ def split_word_occurrences(text, word, ar_word):
     for i, part in enumerate(parts):
         if i % 2 == 1:
             segs.append(("ar", ar_word))
-        elif part.strip():
+        elif re.search(r"\w", part, re.UNICODE):
             segs.append(("ru", part))
     return segs
 
@@ -468,14 +474,41 @@ BAD_WORDS = ("bombing", "bomb", "attack", "war", "riot", "protest",
              "damage", "rubble", "demolit", "flood", "earthquake", "strike",
              "arson", "vandal", "clash", "president", "potus", "minister")
 
-# Канал об исламе и арабском языке — христианские/библейские сюжеты
-# (иконы, храмы, распятия и т.п.) на фоне звучат неуместно, исключаем всегда.
-CHRISTIAN_WORDS = ("church", "cathedral", "chapel", "basilica", "monastery",
-                    "convent", "crucifix", "crucifixion", "christ", "jesus",
-                    "bible", "biblical", "gospel", "christian", "christma",
-                    "nativity", "madonna", "nun", "priest", "pope", "vatican",
-                    "saint", "icon", "orthodox", "catholic", "cross", "angel")
-BAD_WORDS = BAD_WORDS + CHRISTIAN_WORDS
+# Канал об исламе и арабском языке — символика и атрибутика любой другой
+# религии (иконы, храмы, распятия, синагоги, будда-статуи и т.п.) на фоне
+# звучит неуместно, исключаем всегда.
+NON_ISLAMIC_RELIGIOUS_WORDS = (
+    # христианство
+    "church", "cathedral", "chapel", "basilica", "monastery",
+    "convent", "crucifix", "crucifixion", "christ", "jesus",
+    "bible", "biblical", "gospel", "christian", "christma",
+    "nativity", "madonna", "nun", "priest", "pope", "vatican",
+    "saint", "icon", "orthodox", "catholic", "cross", "angel",
+    # иудаизм
+    "synagogue", "torah", "rabbi", "menorah", "kippah", "judaism",
+    "jewish", "hanukkah", "kosher",
+    # прочие религии
+    "buddhist", "buddha", "hindu", "hinduism", "pagoda", "shrine",
+    "deity", "idol", "temple", "shiva", "vishnu", "krishna",
+    "sikh", "gurdwara", "zoroastrian",
+)
+
+# Фото живых людей (лица, портреты и т.п.) на фоне тоже не используем —
+# только пейзажи, архитектура, предметы, животные, каллиграфия.
+PEOPLE_WORDS = (
+    "portrait", "person", "people", "human", "man", "woman", "men",
+    "women", "boy", "girl", "child", "children", "kid", "kids",
+    "baby", "infant", "family", "couple", "bride", "groom",
+    "wedding", "face", "faces", "selfie", "crowd", "worker",
+    "farmer", "student", "teacher", "athlete", "player", "soldier",
+    "king", "queen", "actor", "actress", "elderly",
+)
+BAD_WORDS = BAD_WORDS + NON_ISLAMIC_RELIGIOUS_WORDS + PEOPLE_WORDS
+# Слово целиком, а не подстрока — иначе "icon" ловит "iconic", а "kid"
+# ловит "skidmark" и т.п. ложные срабатывания.
+BAD_PATTERN = re.compile(
+    r"\b(?:" + "|".join(re.escape(w) for w in BAD_WORDS) + r")\b",
+    re.IGNORECASE)
 
 
 def commons_image_urls(term, limit=8):
@@ -484,9 +517,11 @@ def commons_image_urls(term, limit=8):
     Видео на Commons — в основном хроника и новости, а фото мечетей и
     пустынь много профессиональных. Из фото делаем кен-бёрнс.
     Берём thumb-версии (iiurlheight) — так просят сами Wikimedia.
-    Христианские/библейские сюжеты исключаем прямо в запросе (канал об
-    исламе), чтобы такие фото вообще не попадали в выдачу."""
-    exclude = " ".join(f"-intitle:{w}" for w in CHRISTIAN_WORDS)
+    Религиозную символику других религий и фото людей исключаем прямо в
+    запросе (канал об исламе, без живых лиц на фоне), чтобы такие фото
+    вообще не попадали в выдачу."""
+    exclude = " ".join(f"-intitle:{w}"
+                       for w in NON_ISLAMIC_RELIGIOUS_WORDS + PEOPLE_WORDS)
     search = (" ".join(f"intitle:{w}" for w in term.split())
               + " filetype:bitmap " + exclude)
     q = urllib.parse.urlencode({
@@ -512,7 +547,7 @@ def commons_image_urls(term, limit=8):
                              ii.get("thumburl") or ii["url"]))
     # Крупные оригиналы первыми: обычно это самые качественные снимки
     return [u for _, u in sorted(urls, reverse=True)
-            if not any(b in u.lower() for b in BAD_WORDS)]
+            if not BAD_PATTERN.search(u)]
 
 
 def download_head(url, out: Path, max_bytes=40_000_000) -> bool:
