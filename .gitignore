@@ -8,3 +8,4 @@ TIKTOK_TODAY/
 build_all_log.txt
 build_all_errors.txt
 __pycache__/
+youtube_token_en.json
