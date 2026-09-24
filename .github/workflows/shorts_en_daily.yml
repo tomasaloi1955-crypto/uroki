@@ -1,0 +1,61 @@
+name: Английский канал Easy_arabic — 3 шортса в день
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC = 09:00 МСК, задолго до выходов в 13/17/23
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "Сколько роликов собрать и поставить в расписание"
+        default: "3"
+
+permissions:
+  contents: write          # коммитим shorts_en_state.json обратно
+
+concurrency:
+  group: shorts-en-daily
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: english-channel
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ffmpeg и шрифты (арабская вязь)
+        timeout-minutes: 12
+        run: |
+          for i in 1 2 3; do
+            sudo apt-get update -q && \
+            sudo apt-get install -y -q --no-install-recommends \
+              ffmpeg fonts-noto-core fonts-dejavu-core && break
+            echo "попытка $i не удалась, жду 20 сек..."; sleep 20
+          done
+          ffmpeg -version | head -1
+
+      - name: python-библиотеки
+        run: |
+          pip install pillow arabic-reshaper python-bidi requests edge-tts \
+            opencv-python-headless google-api-python-client google-auth-oauthlib
+
+      - name: Собрать ролики и поставить в расписание
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN_EN }}
+        run: python build_and_publish_en.py ${{ github.event.inputs.count || 3 }}
+
+      - name: Сохранить журнал публикаций
+        run: |
+          git config user.name "autopost-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add shorts_en_state.json
+          git diff --cached --quiet || git commit -m "Easy_arabic: очередь роликов пополнена [skip ci]"
+          git push
