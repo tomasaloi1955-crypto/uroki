@@ -109,6 +109,22 @@ def get_service(title):
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
 
+    # GitHub Actions: токен приходит секретами, файлов с токенами там нет
+    if all(os.environ.get(k) for k in
+           ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN")):
+        creds = Credentials(
+            None, refresh_token=os.environ["YT_REFRESH_TOKEN"],
+            client_id=os.environ["YT_CLIENT_ID"],
+            client_secret=os.environ["YT_CLIENT_SECRET"],
+            token_uri="https://oauth2.googleapis.com/token", scopes=SCOPES)
+        creds.refresh(Request())
+        yt = _build(creds)
+        ch = _channel(yt)
+        if not ch or ch["snippet"]["title"] != title:
+            raise SystemExit(f"Секретный токен смотрит не в «{title}», "
+                             f"а в «{ch and ch['snippet']['title']}».")
+        return yt
+
     known = channels()
     if title not in known:
         raise SystemExit(f"Канал «{title}» не подключён. Подключены: "

@@ -375,6 +375,53 @@ def commons_image_urls(term, limit=8):
 # build_background в shorts_v2 ищет фото через эту функцию модуля
 v2.commons_image_urls = commons_image_urls
 
+_kenburns_clip = v2.kenburns_clip
+
+
+CASCADES = Path("build") / "cascades"
+CASCADE_URL = ("https://raw.githubusercontent.com/opencv/opencv/4.x/data/"
+               "haarcascades/")
+
+
+def _cascade_file(name):
+    """OpenCV 5 больше не кладёт каскады в пакет — качаем один раз."""
+    CASCADES.mkdir(parents=True, exist_ok=True)
+    path = CASCADES / name
+    if not path.exists():
+        import urllib.request
+        urllib.request.urlretrieve(CASCADE_URL + name, path)
+    return str(path)
+
+
+def has_face(img: Path) -> bool:
+    """Ищет лица на фото. Фильтр по названию файла ловит не всё: на
+    рынках и в пустыне люди попадали в кадр. Не распознаётся — считаем,
+    что лица нет (отказ проверки не должен останавливать сборку)."""
+    try:
+        import cv2
+        data = cv2.imread(str(img))
+        if data is None:
+            return False
+        gray = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
+        for name in ("haarcascade_frontalface_default.xml",
+                     "haarcascade_profileface.xml"):
+            cascade = cv2.CascadeClassifier(_cascade_file(name))
+            if len(cascade.detectMultiScale(gray, 1.1, 5, minSize=(40, 40))):
+                return True
+    except Exception as e:
+        print(f"  проверка на лица не сработала: {e}")
+    return False
+
+
+def kenburns_clip(img, seg_dur, out, zoom_in=True):
+    if has_face(img):
+        print("  фото отклонено: в кадре лицо")
+        return False
+    return _kenburns_clip(img, seg_dur, out, zoom_in)
+
+
+v2.kenburns_clip = kenburns_clip
+
 
 def split_translit(lesson):
     word, _, meaning = lesson["translit"].partition("—")

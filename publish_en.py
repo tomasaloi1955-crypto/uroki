@@ -119,9 +119,8 @@ def main():
     if not args or args[0] not in ("whoami", "schedule"):
         print(__doc__)
         return
-    yt = get_service()
     if args[0] == "whoami":
-        whoami(yt)
+        whoami(get_service())
         return
 
     hours = DEFAULT_HOURS_UTC
@@ -129,8 +128,14 @@ def main():
         i = args.index("--hours")
         hours = [int(h) for h in args[i + 1].split(",")]
         del args[i:i + 2]
+    main_schedule([int(a) for a in args[1:]] or sorted(LESSONS), hours)
+
+
+def main_schedule(nums, hours=None):
+    """Загружает готовые ролики с отложенной публикацией."""
+    hours = hours or DEFAULT_HOURS_UTC
+    yt = get_service()
     st = load_state()
-    nums = [int(a) for a in args[1:]] or sorted(LESSONS)
     for n in nums:
         if str(n) in st["scheduled"]:
             print(f"Урок {n} уже в расписании — пропускаю.")
