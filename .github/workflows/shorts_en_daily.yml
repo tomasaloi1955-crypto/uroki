@@ -43,7 +43,7 @@ jobs:
       - name: python-библиотеки
         run: |
           pip install pillow arabic-reshaper python-bidi requests edge-tts \
-            opencv-python-headless google-api-python-client google-auth-oauthlib
+            "opencv-python-headless<5" google-api-python-client google-auth-oauthlib
 
       - name: Собрать ролики и поставить в расписание
         env:
