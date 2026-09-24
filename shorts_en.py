@@ -8,13 +8,14 @@ ElevenLabs), но вся речь, подписи и тексты — на ан�
     python shorts_en.py 1          # один урок
     python shorts_en.py 1 2 5      # несколько
 
-Голоса: английская речь — ElevenLabs (голос русского канала,
-ELEVENLABS_VOICE_ID или ELEVENLABS_VOICE_ID_EN), арабские слова —
+Голоса: английская речь — бесплатный en-US-AvaNeural (или ElevenLabs при
+EN_TTS=elevenlabs, голос из ELEVENLABS_VOICE_ID_EN), арабские слова —
 носитель ar-SA-ZariyahNeural (edge-tts), чтобы не было ошибок произношения.
 Результат: build/shorts_en/short_NN.mp4 + short_NN.txt (подпись для поста).
 """
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -26,6 +27,11 @@ OUT_DIR = Path("build") / "shorts_en"
 # Арабские слова — носитель языка (как в уроках русского канала)
 AR_VOICE = "ar-SA-ZariyahNeural"
 AR_RATE = "-25%"
+# Английская речь — бесплатный голос edge-tts; кредиты ElevenLabs
+# оставлены русскому каналу. EN_TTS=elevenlabs вернёт голос русского канала.
+EN_TTS = os.environ.get("EN_TTS", "edge")
+EN_VOICE = "en-US-AvaNeural"
+EN_RATE = "-5%"
 
 # hook — крючок сверху, ar — арабское слово, translit — «слово — значение»
 # (слово до тире озвучивается настоящим арабским аудио), teach — обучающая
@@ -69,7 +75,7 @@ LESSONS = {
     9:  dict(hook="What is this?", ar="مَا هَذَا؟", translit="Ma hadha — what is this?",
              teach="Point at anything and ask: Ma hadha. It means what is this?",
              cta="Subscribe, Arabic made easy!",
-             themes=["souk market", "morocco market", "desert sunset"]),
+             themes=["moroccan lanterns", "dates fruit", "ceramic tiles"]),
     10: dict(hook="Zero is an Arabic word", ar="صِفْر", translit="Sifr — zero",
              teach="The idea of zero reached Europe through Arabic. Sifr gave us both zero and cipher.",
              cta="Share with a math lover!",
@@ -77,7 +83,7 @@ LESSONS = {
     11: dict(hook="How much is it?", ar="بِكَمْ؟", translit="Bikam — how much?",
              teach="The most important question at any market: Bikam. How much is it?",
              cta="Save this before you go shopping!",
-             themes=["gold souk", "grand bazaar", "morocco spices"]),
+             themes=["morocco spices", "gold jewellery", "brass teapot"]),
     12: dict(hook="The magic word Tayyib", ar="طَيِّب", translit="Tayyib — okay",
              teach="Tayyib means okay, good, deal. Arabs say it all the time: Tayyib.",
              cta="Subscribe for daily Arabic!",
@@ -89,7 +95,7 @@ LESSONS = {
     14: dict(hook="What's your name?", ar="مَا اسْمُكَ؟", translit="Ma ismuk — what's your name?",
              teach="Meeting someone new? Ask: Ma ismuk. What's your name?",
              cta="Write your name in the comments!",
-             themes=["arabic calligraphy", "souk market", "sheikh zayed mosque"]),
+             themes=["arabic calligraphy", "moroccan lanterns", "sheikh zayed mosque"]),
     15: dict(hook="My name is...", ar="اسْمِي", translit="Ismi — my name is",
              teach="To introduce yourself, say Ismi and then your name. Ismi Maryam: my name is Maryam.",
              cta="Introduce yourself in Arabic below!",
@@ -133,7 +139,7 @@ LESSONS = {
     25: dict(hook="Magazine comes from Arabic", ar="مَخْزَن", translit="Makhzan — storehouse",
              teach="A magazine was once a storehouse, from the Arabic Makhzan. A storehouse of stories!",
              cta="Subscribe for more word stories!",
-             themes=["old books", "library", "souk market"]),
+             themes=["old books", "library", "arabic manuscript"]),
     26: dict(hook="Just a moment!", ar="لَحْظَة", translit="Lahza — one moment",
              teach="Lahza means just a moment! You will hear it everywhere: Lahza.",
              cta="Subscribe, don't waste a moment!",
@@ -299,7 +305,75 @@ OUTRO_PHRASES = [
 ]
 
 CTA_TEXT = "Learn Arabic one word a day. Subscribe!"
-HASHTAGS = "#learnarabic #arabic #arabiclanguage #arabicforbeginners #shorts"
+
+# Теги и хэштеги — по смыслу ролика, а не одни и те же на всех:
+# YouTube по ним понимает, кому показывать, а зритель ищет именно это.
+GROUPS = {
+    "loanwords": ([2, 4, 7, 10, 13, 16, 19, 22, 25],
+                  ["english words from arabic", "word origins", "etymology",
+                   "arabic loanwords", "language facts"],
+                  "#etymology #wordorigins #languagefacts"),
+    "greetings": ([1, 5, 18, 20, 21, 23, 24],
+                  ["arabic greetings", "how to say hello in arabic",
+                   "arabic phrases", "speak arabic"],
+                  "#arabicgreetings #arabicphrases #speakarabic"),
+    "phrases": ([6, 8, 9, 11, 12, 14, 15, 17, 26, 27],
+                ["arabic phrases", "travel arabic", "arabic conversation",
+                 "useful arabic", "speak arabic"],
+                "#arabicphrases #travelarabic #speakarabic"),
+    "colors": ([47, 48, 49],
+               ["arabic colors", "colors in arabic", "arabic vocabulary"],
+               "#arabiccolors #arabicvocabulary"),
+    "family": ([36, 37, 38, 39],
+               ["family in arabic", "arabic family words", "arabic vocabulary"],
+               "#arabicfamily #arabicvocabulary"),
+}
+BASE_TAGS = ["learn arabic", "arabic", "arabic for beginners",
+             "arabic words", "arabic lesson", "shorts"]
+BASE_HASHTAGS = "#learnarabic #arabic #arabicforbeginners"
+
+
+def _group(n):
+    for name, (nums, tags, hashtags) in GROUPS.items():
+        if n in nums:
+            return tags, hashtags
+    return (["arabic vocabulary", "word of the day", "arabic words for beginners"],
+            "#arabicvocabulary #wordoftheday")
+
+
+def tags_for(n):
+    word, meaning = split_translit(LESSONS[n])
+    extra, _ = _group(n)
+    meaning = meaning.rstrip("?!.")
+    own = [f"{meaning} in arabic", f"arabic word {word.lower()}"] if meaning else []
+    # YouTube принимает до 500 символов тегов — с запасом укладываемся
+    return BASE_TAGS + extra + own
+
+
+def hashtags_for(n):
+    _, meaning = split_translit(LESSONS[n])
+    _, extra = _group(n)
+    own = "#" + re.sub(r"[^a-z]", "", meaning.lower()) if meaning else ""
+    return " ".join(x for x in (BASE_HASHTAGS, extra, own, "#shorts") if x)
+
+
+# Фильтр shorts_v2 пропускал людей и неуместное: проводник-бербер в
+# пустыне, картина «Придворные в розовом саду», могила с розой.
+EXTRA_BAD = re.compile(
+    r"(?:guide|courtier|lad(?:y|ies)|gentlem[ae]n|grave|tomb|cemetery|"
+    r"berber|tuareg|nomad|bedouin|merchant|vendor|seller|tourist|"
+    r"market|souk|bazaar|shop|stall|crowd|workers?|"
+    r"portrait|painting)", re.IGNORECASE)
+_commons_image_urls = v2.commons_image_urls
+
+
+def commons_image_urls(term, limit=8):
+    return [u for u in _commons_image_urls(term, limit)
+            if not EXTRA_BAD.search(u)]
+
+
+# build_background в shorts_v2 ищет фото через эту функцию модуля
+v2.commons_image_urls = commons_image_urls
 
 
 def split_translit(lesson):
@@ -347,8 +421,10 @@ def synthesize_plan(plan, out_mp3: Path, work: Path):
                 raw = work / f"_raw_{len(cache):02d}.mp3"
                 if kind == "ar":
                     edge_tts(text, AR_VOICE, raw, rate=AR_RATE)
-                else:
+                elif EN_TTS == "elevenlabs":
                     v2.elevenlabs_tts(text, raw)
+                else:
+                    edge_tts(text, EN_VOICE, raw, rate=EN_RATE)
                 v2.ffmpeg("-i", str(raw), "-ar", "44100", "-ac", "1",
                           "-q:a", "2", str(clip))
             cache[text] = clip
@@ -362,9 +438,9 @@ def synthesize_plan(plan, out_mp3: Path, work: Path):
     v2.ffmpeg(*cmd, "-filter_complex", filt, "-map", "[out]", str(out_mp3))
 
 
-def caption_for(lesson):
+def caption_for(n, lesson):
     return (f'{lesson["hook"]} · {lesson["ar"]} · {lesson["translit"]}\n'
-            f'{lesson["teach"]}\n{lesson["cta"]}\n\n{HASHTAGS}')
+            f'{lesson["teach"]}\n{lesson["cta"]}\n\n{hashtags_for(n)}')
 
 
 def build_short(n: int):
@@ -389,10 +465,14 @@ def build_short(n: int):
     overlay = work / "overlay.png"
     v2.draw_overlay(lesson, overlay)
 
-    bg = v2.build_background(lesson, total, work)
+    bg = work / "bg.mp4"
+    if not bg.exists():
+        bg = v2.build_background(lesson, total, work)
 
     out = OUT_DIR / f"short_{n:02d}.mp4"
-    p = v2.ffmpeg("-i", str(bg), "-i", str(overlay), "-i", str(voice),
+    # -loop 1: без него надписи пропадали на стыке фоновых фото — склейка
+    # фона сбивает метки времени, и одиночный кадр оверлея «заканчивался»
+    p = v2.ffmpeg("-i", str(bg), "-loop", "1", "-i", str(overlay), "-i", str(voice),
                   "-filter_complex", "[0:v][1:v]overlay=0:0:format=auto[v]",
                   "-map", "[v]", "-map", "2:a", "-af", "apad",
                   "-t", f"{total:.2f}",
@@ -402,8 +482,11 @@ def build_short(n: int):
     if p.returncode != 0:
         raise RuntimeError(f"ffmpeg: {p.stderr[-800:]}")
 
-    (OUT_DIR / f"short_{n:02d}.txt").write_text(caption_for(lesson),
+    (OUT_DIR / f"short_{n:02d}.txt").write_text(caption_for(n, lesson),
                                                   encoding="utf-8")
+    # компьютер старый: промежуточные фото и куски фона больше не нужны
+    for junk in list(work.glob("photo_*")) + list(work.glob("clip_*")):
+        junk.unlink(missing_ok=True)
     print(f"  done: {out}  ({total:.0f} s)")
     return out
 
