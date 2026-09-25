@@ -1,37 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Шортсы для англоязычного канала «арабский для всех»: тот же конвейер,
-что и shorts_v2.py (фото-фоны Wikimedia + крупное арабское слово +
-ElevenLabs), но вся речь, подписи и тексты — на английском.
+Английский канал Easy_arabic: арабский для англоговорящих.
+Содержание уроков и английские формулировки; вся механика — в shorts_core.
 
-Запуск:
-    python shorts_en.py 1          # один урок
-    python shorts_en.py 1 2 5      # несколько
+    python shorts_en.py 1 2 3
 
-Голоса: английская речь — бесплатный en-US-AvaNeural (или ElevenLabs при
-EN_TTS=elevenlabs, голос из ELEVENLABS_VOICE_ID_EN), арабские слова —
-носитель ar-SA-ZariyahNeural (edge-tts), чтобы не было ошибок произношения.
-Результат: build/shorts_en/short_NN.mp4 + short_NN.txt (подпись для поста).
+Голоса: ведущая — бесплатная en-US-AvaNeural, арабские слова — носитель
+ar-SA-ZariyahNeural (см. shorts_core).
 """
 
-import os
-import re
-import sys
-from pathlib import Path
-
-import shorts_v2 as v2
-
-sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
-OUT_DIR = Path("build") / "shorts_en"
-# Арабские слова — носитель языка (как в уроках русского канала)
-AR_VOICE = "ar-SA-ZariyahNeural"
-AR_RATE = "-25%"
-# Английская речь — бесплатный голос edge-tts; кредиты ElevenLabs
-# оставлены русскому каналу. EN_TTS=elevenlabs вернёт голос русского канала.
-EN_TTS = os.environ.get("EN_TTS", "edge")
-EN_VOICE = "en-US-AvaNeural"
-EN_RATE = "-5%"
+import shorts_core as core
 
 # hook — крючок сверху, ar — арабское слово, translit — «слово — значение»
 # (слово до тире озвучивается настоящим арабским аудио), teach — обучающая
@@ -333,212 +311,38 @@ BASE_TAGS = ["learn arabic", "arabic", "arabic for beginners",
 BASE_HASHTAGS = "#learnarabic #arabic #arabicforbeginners"
 
 
-def _group(n):
-    for name, (nums, tags, hashtags) in GROUPS.items():
-        if n in nums:
-            return tags, hashtags
-    return (["arabic vocabulary", "word of the day", "arabic words for beginners"],
-            "#arabicvocabulary #wordoftheday")
+LANG = core.Lang(
+    code="en", channel="Easy_arabic",
+    voice="en-US-AvaNeural", rate="-5%",
+    lessons=LESSONS,
+    intro=INTRO_PHRASES, repeat=REPEAT_PHRASES,
+    meaning_lead=MEANING_LEADS, means="{word} means {meaning}.",
+    ask=ASK_PHRASES, outro=OUTRO_PHRASES,
+    cta_text=CTA_TEXT,
+    base_tags=BASE_TAGS, base_hashtags=BASE_HASHTAGS,
+    groups=GROUPS,
+    default_group=(["arabic vocabulary", "word of the day",
+                    "arabic words for beginners"],
+                   "#arabicvocabulary #wordoftheday"),
+    meaning_tag="{meaning} in arabic", word_tag="arabic word {word}",
+)
+
+OUT_DIR = LANG.out_dir
+split_translit = core.split_translit
+has_face = core.has_face
 
 
 def tags_for(n):
-    word, meaning = split_translit(LESSONS[n])
-    extra, _ = _group(n)
-    meaning = meaning.rstrip("?!.")
-    own = [f"{meaning} in arabic", f"arabic word {word.lower()}"] if meaning else []
-    # YouTube принимает до 500 символов тегов — с запасом укладываемся
-    return BASE_TAGS + extra + own
+    return core.tags_for(LANG, n)
 
 
 def hashtags_for(n):
-    _, meaning = split_translit(LESSONS[n])
-    _, extra = _group(n)
-    own = "#" + re.sub(r"[^a-z]", "", meaning.lower()) if meaning else ""
-    return " ".join(x for x in (BASE_HASHTAGS, extra, own, "#shorts") if x)
+    return core.hashtags_for(LANG, n)
 
 
-# Фильтр shorts_v2 пропускал людей и неуместное: проводник-бербер в
-# пустыне, картина «Придворные в розовом саду», могила с розой.
-EXTRA_BAD = re.compile(
-    r"(?:guide|courtier|lad(?:y|ies)|gentlem[ae]n|grave|tomb|cemetery|"
-    r"berber|tuareg|nomad|bedouin|merchant|vendor|seller|tourist|"
-    r"market|souk|bazaar|shop|stall|crowd|workers?|"
-    r"portrait|painting)", re.IGNORECASE)
-_commons_image_urls = v2.commons_image_urls
-
-
-def commons_image_urls(term, limit=8):
-    return [u for u in _commons_image_urls(term, limit)
-            if not EXTRA_BAD.search(u)]
-
-
-# build_background в shorts_v2 ищет фото через эту функцию модуля
-v2.commons_image_urls = commons_image_urls
-
-_kenburns_clip = v2.kenburns_clip
-
-
-CASCADES = Path("build") / "cascades"
-CASCADE_URL = ("https://raw.githubusercontent.com/opencv/opencv/4.x/data/"
-               "haarcascades/")
-
-
-def _cascade_file(name):
-    """OpenCV 5 больше не кладёт каскады в пакет — качаем один раз."""
-    CASCADES.mkdir(parents=True, exist_ok=True)
-    path = CASCADES / name
-    if not path.exists():
-        import urllib.request
-        urllib.request.urlretrieve(CASCADE_URL + name, path)
-    return str(path)
-
-
-def has_face(img: Path) -> bool:
-    """Ищет лица на фото. Фильтр по названию файла ловит не всё: на
-    рынках и в пустыне люди попадали в кадр. Не распознаётся — считаем,
-    что лица нет (отказ проверки не должен останавливать сборку)."""
-    try:
-        import cv2
-        data = cv2.imread(str(img))
-        if data is None:
-            return False
-        gray = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
-        for name in ("haarcascade_frontalface_default.xml",
-                     "haarcascade_profileface.xml"):
-            cascade = cv2.CascadeClassifier(_cascade_file(name))
-            if len(cascade.detectMultiScale(gray, 1.1, 5, minSize=(40, 40))):
-                return True
-    except Exception as e:
-        print(f"  проверка на лица не сработала: {e}")
-    return False
-
-
-def kenburns_clip(img, seg_dur, out, zoom_in=True):
-    if has_face(img):
-        print("  фото отклонено: в кадре лицо")
-        return False
-    return _kenburns_clip(img, seg_dur, out, zoom_in)
-
-
-v2.kenburns_clip = kenburns_clip
-
-
-def split_translit(lesson):
-    word, _, meaning = lesson["translit"].partition("—")
-    return word.strip().rstrip("!?."), meaning.strip()
-
-
-def tts_plan(n, lesson):
-    """Сценарий озвучки: английская речь, а каждое вхождение транслита
-    заменяется на сегмент с настоящим арабским словом (см.
-    shorts_v2.split_word_occurrences)."""
-    word, meaning = split_translit(lesson)
-    s = f'{lesson["hook"]}. {v2._pick(INTRO_PHRASES, n, 0)}: {word}.'
-    s += f' {lesson["teach"]}'
-    s += f' {v2._pick(REPEAT_PHRASES, n, 1)}: {word}.'
-    if meaning:
-        s += f' {v2._pick(MEANING_LEADS, n, 2)}: {word} means {meaning}.'
-    s += f' {v2._pick(ASK_PHRASES, n, 3)}: {word}. {v2._pick(OUTRO_PHRASES, n, 4)}'
-    if n % 2 == 0:
-        s += f' {lesson["cta"]}'
-    return v2.split_word_occurrences(s, word, lesson["ar"])
-
-
-def edge_tts(text, voice, out_mp3: Path, rate=None):
-    import asyncio
-    import edge_tts as et
-    kw = {"rate": rate} if rate else {}
-    asyncio.run(et.Communicate(text.strip(), voice, **kw).save(str(out_mp3)))
-
-
-def synthesize_plan(plan, out_mp3: Path, work: Path):
-    """Как shorts_v2.synthesize_plan, но арабское слово читает носитель
-    (edge-tts Zariyah, медленно — как в уроках русского канала), а не
-    ElevenLabs: у ElevenLabs-голоса бывали ошибки в арабском."""
-    cache, clips = {}, []
-    silence = work / "_silence.mp3"
-    if not silence.exists():
-        v2.ffmpeg("-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
-                  "-t", "0.35", "-q:a", "9", str(silence))
-    for kind, text in plan:
-        if text not in cache:
-            # единый формат (44.1 кГц моно) — иначе concat путает дорожки
-            clip = work / f"_seg_{kind}_{len(cache):02d}.mp3"
-            if not clip.exists():
-                raw = work / f"_raw_{len(cache):02d}.mp3"
-                if kind == "ar":
-                    edge_tts(text, AR_VOICE, raw, rate=AR_RATE)
-                elif EN_TTS == "elevenlabs":
-                    v2.elevenlabs_tts(text, raw)
-                else:
-                    edge_tts(text, EN_VOICE, raw, rate=EN_RATE)
-                v2.ffmpeg("-i", str(raw), "-ar", "44100", "-ac", "1",
-                          "-q:a", "2", str(clip))
-            cache[text] = clip
-        clips += [cache[text], silence]
-
-    cmd = []
-    for c in clips:
-        cmd += ["-i", str(c)]
-    filt = "".join(f"[{i}:a]" for i in range(len(clips)))
-    filt += f"concat=n={len(clips)}:v=0:a=1[out]"
-    v2.ffmpeg(*cmd, "-filter_complex", filt, "-map", "[out]", str(out_mp3))
-
-
-def caption_for(n, lesson):
-    return (f'{lesson["hook"]} · {lesson["ar"]} · {lesson["translit"]}\n'
-            f'{lesson["teach"]}\n{lesson["cta"]}\n\n{hashtags_for(n)}')
-
-
-def build_short(n: int):
-    lesson = LESSONS[n]
-    # shorts_v2 берёт голос и нижнюю плашку из глобальных настроек —
-    # подменяем их на английские
-    if os.environ.get("ELEVENLABS_VOICE_ID_EN"):
-        os.environ["ELEVENLABS_VOICE_ID"] = os.environ["ELEVENLABS_VOICE_ID_EN"]
-    v2.CTA_TEXT = CTA_TEXT
-
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    work = OUT_DIR / f"work_{n:02d}"
-    work.mkdir(exist_ok=True)
-    print(f"Lesson {n}: {lesson['hook']}")
-
-    voice = work / "voice.mp3"
-    if not voice.exists():
-        print("  ElevenLabs voice-over...")
-        synthesize_plan(tts_plan(n, lesson), voice, work)
-    total = v2.probe_duration(voice) + 1.5
-
-    overlay = work / "overlay.png"
-    v2.draw_overlay(lesson, overlay)
-
-    bg = work / "bg.mp4"
-    if not bg.exists():
-        bg = v2.build_background(lesson, total, work)
-
-    out = OUT_DIR / f"short_{n:02d}.mp4"
-    # -loop 1: без него надписи пропадали на стыке фоновых фото — склейка
-    # фона сбивает метки времени, и одиночный кадр оверлея «заканчивался»
-    p = v2.ffmpeg("-i", str(bg), "-loop", "1", "-i", str(overlay), "-i", str(voice),
-                  "-filter_complex", "[0:v][1:v]overlay=0:0:format=auto[v]",
-                  "-map", "[v]", "-map", "2:a", "-af", "apad",
-                  "-t", f"{total:.2f}",
-                  "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
-                  "-pix_fmt", "yuv420p",
-                  "-c:a", "aac", "-b:a", "160k", str(out))
-    if p.returncode != 0:
-        raise RuntimeError(f"ffmpeg: {p.stderr[-800:]}")
-
-    (OUT_DIR / f"short_{n:02d}.txt").write_text(caption_for(n, lesson),
-                                                  encoding="utf-8")
-    # компьютер старый: промежуточные фото и куски фона больше не нужны
-    for junk in list(work.glob("photo_*")) + list(work.glob("clip_*")):
-        junk.unlink(missing_ok=True)
-    print(f"  done: {out}  ({total:.0f} s)")
-    return out
+def build_short(n):
+    return core.build_short(LANG, n)
 
 
 if __name__ == "__main__":
-    nums = [int(a) for a in sys.argv[1:]] or [1]
-    for n in nums:
-        build_short(n)
+    core.cli(LANG)
