@@ -15,6 +15,7 @@
 """
 
 import re
+import unicodedata
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -143,7 +144,15 @@ def tags_for(lang, n):
 def hashtags_for(lang, n):
     _, meaning = split_translit(lang.lessons[n])
     _, extra = _group(lang, n)
-    own = "#" + re.sub(r"[^a-záéíóúñ]", "", meaning.lower()) if meaning else ""
+    # свой хэштег — только если перевод это слово или короткая пара слов:
+    # из «sí / no» получалось бессмысленное #síno.
+    # Диакритику убираем: в поиске чаще пишут без неё (#azucar).
+    plain = unicodedata.normalize("NFKD", meaning.lower())
+    plain = re.sub(r"[^a-z ]", "", plain).strip()
+    # артикль в хэштеге не нужен: было #laalmohada, стало #almohada
+    plain = re.sub(r"^(el|la|los|las|un|una|the|a) ", "", plain)
+    own = "#" + plain.replace(" ", "") if 0 < len(plain.split()) <= 2 \
+        and "/" not in meaning else ""
     return " ".join(x for x in (lang.base_hashtags, extra, own, "#shorts") if x)
 
 
