@@ -1,8 +1,8 @@
-name: Английский канал Easy_arabic — 3 шортса в день
+name: Испанский канал Árabe Fácil — 3 шортса в день
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # 06:00 UTC = 09:00 МСК, задолго до выходов в 13/17/23
+    - cron: "30 6 * * *"   # 09:30 МСК, через полчаса после английского
   workflow_dispatch:
     inputs:
       count:
@@ -10,10 +10,10 @@ on:
         default: "3"
 
 permissions:
-  contents: write          # коммитим shorts_en_state.json обратно
+  contents: write          # коммитим shorts_es_state.json обратно
 
 concurrency:
-  group: shorts-en-daily
+  group: shorts-es-daily
   cancel-in-progress: false
 
 jobs:
@@ -49,14 +49,14 @@ jobs:
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN_EN }}
-        run: python build_and_publish_en.py ${{ github.event.inputs.count || 3 }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN_ES }}
+        run: python build_and_publish.py es ${{ github.event.inputs.count || 3 }}
 
       - name: Сохранить журнал публикаций
         run: |
           git config user.name "autopost-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add shorts_en_state.json
-          git diff --cached --quiet || git commit -m "Easy_arabic: очередь роликов пополнена [skip ci]"
+          git add shorts_es_state.json
+          git diff --cached --quiet || git commit -m "Árabe Fácil: очередь роликов пополнена [skip ci]"
           git pull --rebase origin english-channel
           git push
