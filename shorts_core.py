@@ -118,6 +118,27 @@ v2.commons_image_urls = commons_image_urls
 v2.kenburns_clip = kenburns_clip
 
 
+# ---------- читаемость текста ----------
+
+def draw_overlay(lesson, out_png: Path):
+    """Надписи shorts_v2 плюс тёмная плашка под транслитом.
+
+    На светлых фото (обои, мрамор, сахар) белый транслит сливался с
+    фоном. Сам фон не затемняем — фото в роликах должны остаться как
+    есть; плашка закрывает только полосу под строкой «Marhaba — hola»,
+    такая же, как под крючком сверху."""
+    from PIL import Image, ImageDraw
+
+    base = Image.new("RGBA", (v2.W, v2.H), (0, 0, 0, 0))
+    v2.rounded_panel(ImageDraw.Draw(base), [70, 1150 - 64, v2.W - 70, 1150 + 64])
+
+    text_png = out_png.with_name(out_png.stem + "_text.png")
+    v2.draw_overlay(lesson, text_png)
+    with Image.open(text_png) as text_layer:
+        Image.alpha_composite(base, text_layer.convert("RGBA")).save(out_png)
+    text_png.unlink(missing_ok=True)
+
+
 # ---------- тексты ----------
 
 def split_translit(lesson):
@@ -235,7 +256,7 @@ def build_short(lang, n: int):
     total = v2.probe_duration(voice) + 1.5
 
     overlay = work / "overlay.png"
-    v2.draw_overlay(lesson, overlay)
+    draw_overlay(lesson, overlay)
 
     bg = work / "bg.mp4"
     if not bg.exists():
