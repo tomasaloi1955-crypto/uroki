@@ -6,6 +6,7 @@
 а всё, что чинится один раз для всех каналов, здесь.
 
 Главные уроки, уже учтённые в коде:
+  * ведущий — ElevenLabs, если задан ELEVENLABS_VOICE_ID_<КОД>, иначе edge-tts;
   * арабское слово всегда читает носитель (edge-tts Zariyah, -25%),
     а не голос ведущего — иначе бывают ошибки произношения;
   * надписи накладываются с -loop 1, иначе они пропадают на стыке фото;
@@ -209,6 +210,53 @@ def edge_tts(text, voice, out_mp3: Path, rate=None):
     asyncio.run(et.Communicate(text.strip(), voice, **kw).save(str(out_mp3)))
 
 
+def eleven_voice(lang):
+    """ID голоса ElevenLabs для ведущего этого языка или None.
+
+    Голос свой для каждого канала: ELEVENLABS_VOICE_ID_ES, _EN... Голос
+    русского канала (ELEVENLABS_VOICE_ID) сюда не подставляем — по-испански
+    он звучит с акцентом. Нет ключа или голоса — остаётся edge-tts."""
+    import os
+    if not os.environ.get("ELEVENLABS_API_KEY"):
+        return None
+    return os.environ.get(f"ELEVENLABS_VOICE_ID_{lang.code.upper()}") or None
+
+
+def elevenlabs_tts(text, voice_id, out_mp3: Path):
+    import json
+    import os
+    import urllib.request
+    req = urllib.request.Request(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+        "?output_format=mp3_44100_128",
+        data=json.dumps({"text": text.strip(),
+                         "model_id": "eleven_multilingual_v2",
+                         # как на русском канале: стабильнее и не тараторит
+                         "voice_settings": {"stability": 0.6,
+                                            "similarity_boost": 0.75,
+                                            "style": 0.3,
+                                            "speed": 0.9}}).encode(),
+        headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"],
+                 "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=120) as r:
+        out_mp3.write_bytes(r.read())
+
+
+def host_tts(lang, text, raw: Path):
+    """Речь ведущего: ElevenLabs, если настроен, иначе edge-tts.
+    Кончился лимит или сбой сети — ролик всё равно собирается на
+    edge-tts, а не роняет ежедневный запуск."""
+    voice_id = eleven_voice(lang)
+    if voice_id:
+        try:
+            elevenlabs_tts(text, voice_id, raw)
+            return
+        except Exception as e:
+            print(f"  ElevenLabs не ответил ({e}) — озвучка edge-tts")
+    edge_tts(text, lang.voice, raw, rate=lang.rate)
+
+
 def synthesize_plan(lang, plan, out_mp3: Path, work: Path):
     cache, clips = {}, []
     silence = work / "_silence.mp3"
@@ -224,7 +272,7 @@ def synthesize_plan(lang, plan, out_mp3: Path, work: Path):
                 if kind == "ar":
                     edge_tts(text, AR_VOICE, raw, rate=AR_RATE)
                 else:
-                    edge_tts(text, lang.voice, raw, rate=lang.rate)
+                    host_tts(lang, text, raw)
                 v2.ffmpeg("-i", str(raw), "-ar", "44100", "-ac", "1",
                           "-q:a", "2", str(clip))
             cache[text] = clip
