@@ -35,7 +35,7 @@ jobs:
           ffmpeg -version | head -1
 
       - name: Устанавливаем python-библиотеки
-        run: pip install pillow arabic-reshaper python-bidi requests
+        run: pip install pillow arabic-reshaper python-bidi requests edge-tts
 
       - name: Собираем шортс дня и постим на YouTube
         env:

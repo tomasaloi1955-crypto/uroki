@@ -24,6 +24,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
+from voice_budget import free_tts, long_may_use_eleven
 from shorts_v2 import (
     GOLD, FONT_BOLD, FONT_REG, FONT_AR, UA,
     ar_text, pick_font, strip_accents, wrap_to_width,
@@ -137,6 +138,20 @@ def split_vocab_occurrences(text, vocab):
     return segs
 
 
+# Чем озвучивается текущая серия; решает build_episode по остатку
+# бесплатного лимита ElevenLabs (см. voice_budget.py).
+USE_ELEVEN = False
+
+
+def episode_chars(scenes, vocab):
+    """Сколько символов ElevenLabs уйдёт на серию (повторы кэшируются)."""
+    seen = set()
+    for sc in scenes:
+        for kind, text in split_vocab_occurrences(strip_accents(sc["speech"]), vocab):
+            seen.add((kind, text))
+    return sum(len(t) for _, t in seen)
+
+
 def synthesize_plan_slow(plan, out_mp3: Path, work: Path):
     """Синтезирует план [("ru"|"ar", текст)] по сегментам и склеивает их
     через ffmpeg — вместо одного запроса на всю реплику сцены целиком.
@@ -158,10 +173,14 @@ def synthesize_plan_slow(plan, out_mp3: Path, work: Path):
         ffmpeg("-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
                "-t", "0.35", "-q:a", "9", str(silence))
     for kind, text in plan:
-        key = hashlib.md5(f"{kind}:{text}".encode("utf-8")).hexdigest()[:12]
+        # движок в ключе кэша: при смене голоса старые клипы не подмешаются
+        key = hashlib.md5(f"{USE_ELEVEN}:{kind}:{text}".encode("utf-8")).hexdigest()[:12]
         clip = work / f"_seg_{key}.mp3"
         if not clip.exists():
-            elevenlabs_tts_slow(text, clip)
+            if USE_ELEVEN:
+                elevenlabs_tts_slow(text, clip)
+            else:
+                free_tts(kind, text, clip, ru_rate="-10%")
         clips.append(clip)
         clips.append(silence)
 
@@ -1202,6 +1221,17 @@ def build_episode(n: int) -> Path:
     work.mkdir(exist_ok=True)
     print(f"Эпизод {n}: {ep['title']}")
     vocab = build_ar_vocab(ep["scenes"])
+
+    # Бесплатный лимит ElevenLabs — прежде всего шортсам; серия берёт
+    # ElevenLabs целиком или не берёт совсем (голос не смешивается).
+    global USE_ELEVEN
+    engine_file = work / "voice_engine.txt"
+    if engine_file.exists():             # недособранная серия — тем же голосом
+        USE_ELEVEN = engine_file.read_text(encoding="utf-8").strip() == "eleven"
+    else:
+        USE_ELEVEN = long_may_use_eleven(episode_chars(ep["scenes"], vocab))
+        engine_file.write_text("eleven" if USE_ELEVEN else "free",
+                               encoding="utf-8")
 
     clips = []
     for i, scene in enumerate(ep["scenes"]):

@@ -5,9 +5,10 @@
   python autopost_long.py        # следующая серия из очереди
   python autopost_long.py 1      # конкретная серия
 
-Конвейер: long_video.py (фото-фоны + текст + ElevenLabs, тот же фирменный
+Конвейер: long_video.py (фото-фоны + текст + озвучка, тот же фирменный
 стиль, что у shorts). Обложка — только для длинных видео (у shorts её нет).
-Журнал — long_state.json.
+Журнал — long_state.json. Голос серии: ElevenLabs, только если бесплатный
+лимит после резерва на шортсы это позволяет, иначе edge-tts (voice_budget.py).
 """
 
 import json

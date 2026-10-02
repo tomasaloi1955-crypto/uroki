@@ -906,14 +906,28 @@ def synthesize_plan(plan, out_mp3: Path, work: Path):
         ffmpeg("-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
                "-t", "0.35", "-q:a", "9", str(silence))
 
-    for i, (kind, text) in enumerate(plan):
-        if text not in cache:
-            clip = work / f"_seg_{kind}_{len(cache):02d}.mp3"
-            if not clip.exists():
-                elevenlabs_tts(text, clip)
-            cache[text] = clip
-        clips.append(cache[text])
-        clips.append(silence)
+    try:
+        for i, (kind, text) in enumerate(plan):
+            if text not in cache:
+                clip = work / f"_seg_{kind}_{len(cache):02d}.mp3"
+                if not clip.exists():
+                    elevenlabs_tts(text, clip)
+                cache[text] = clip
+            clips.append(cache[text])
+            clips.append(silence)
+    except Exception as e:
+        # Кончился бесплатный лимит или сбой — весь ролик бесплатным
+        # голосом (не вперемешку), но шортс дня всё равно выходит.
+        from voice_budget import free_tts
+        print(f"  ElevenLabs не ответил ({e}) — озвучка edge-tts")
+        cache, clips = {}, []
+        for kind, text in plan:
+            if text not in cache:
+                clip = work / f"_free_{kind}_{len(cache):02d}.mp3"
+                if not clip.exists():
+                    free_tts(kind, text, clip)
+                cache[text] = clip
+            clips += [cache[text], silence]
 
     cmd = []
     for c in clips:
