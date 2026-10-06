@@ -22,8 +22,10 @@ def main():
     count = int(sys.argv[2]) if len(sys.argv) > 2 else 3
     lang = publish.lang_by_code(code)
     st = publish.load_state(lang)
+    # skip — уроки, загруженные мимо журнала (с компьютера): не повторяем
+    skip = set(st.get("skip", []))
     queue = [n for n in sorted(lang.lessons)
-             if str(n) not in st["scheduled"]][:count]
+             if str(n) not in st["scheduled"] and n not in skip][:count]
     if not queue:
         print("Очередь пуста: все уроки уже в расписании.")
         return
