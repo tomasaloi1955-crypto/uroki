@@ -28,6 +28,8 @@ from pathlib import Path
 
 import requests
 
+from promo import with_ad
+
 STATE = Path("state.json")
 
 
@@ -227,6 +229,9 @@ def main():
     descr = (f'Урок {n} курса «{lesson["course"]}». Тема: {lesson["topic"]}.\n'
              f'Учитель: {lesson["teacher"]}. Новый урок — каждый день!\n'
              f'#{lang_tag} #урок{n}')
+    # Курс — арабский, в английских уроках его не рекламируем
+    ad = with_ad if lang_tag == "арабский" else (lambda d: d)
+    descr = ad(descr)
     tags = [lang_tag, f"{lang_tag} язык", f"уроки {lang_tag[:-2]}ого", lesson["topic"]]
 
     # Обложка урока (в фирменном стиле канала)
@@ -262,7 +267,9 @@ def main():
     for sv in shorts:
         cap_file = sv.with_suffix(".txt")
         cap = cap_file.read_text(encoding="utf-8") if cap_file.exists() else title
-        s_title = cap.splitlines()[0][:90] + " #Shorts"
+        first_line = cap.splitlines()[0]
+        s_title = first_line[:90] + " #Shorts"
+        cap = ad(cap)  # после заголовка: он берётся из первой строки
 
         if has("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
             try_post(yt_upload, "YouTube Shorts", sv, s_title, cap, tags)
@@ -275,7 +282,7 @@ def main():
         if has("IG_TOKEN", "IG_USER_ID") and fid and sv.stat().st_size < 19_000_000:
             try_post(ig_post_reel, "Instagram", tg_public_url(fid), cap)
         if has("TIKTOK_TOKEN"):
-            try_post(tiktok_post, "TikTok", sv, cap.splitlines()[0])
+            try_post(tiktok_post, "TikTok", sv, first_line)
 
     log(f"Готово. Завтра — урок {n + 1}.")
 

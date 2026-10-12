@@ -26,6 +26,9 @@ from PIL import Image, ImageDraw, ImageFont
 import arabic_reshaper
 from bidi.algorithm import get_display
 
+from promo import SCREEN_TEXT as PROMO_SCREEN, VOICE_TEXT as PROMO_VOICE
+from promo import course_day, description_block
+
 # delete_harakat=True — огласовки (ташкиль) иногда мешают reshaper'у
 # правильно соединять буквы (текст на экране распадался на отдельные
 # изолированные буквы). На озвучку это не влияет: TTS получает текст с
@@ -850,7 +853,9 @@ def tts_plan(n, lesson):
     if meaning:
         s += f' {meaning_lead}: {word} — значит «{meaning}».'
     s += f' {ask}: {word}. {outro}'
-    if n % 2 == 0:
+    if course_day(n):
+        s += f' {PROMO_VOICE}'
+    elif n % 2 == 0:
         s += f' {lesson["cta"]}'
 
     return split_word_occurrences(s, word, lesson["ar"])
@@ -1127,7 +1132,7 @@ def wrap_to_width(d, text, font, max_w):
 CTA_TEXT = "Хочешь учить арабский легко? Подпишись!"
 
 
-def draw_overlay(lesson, out_png: Path):
+def draw_overlay(lesson, out_png: Path, cta=CTA_TEXT):
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
@@ -1175,7 +1180,7 @@ def draw_overlay(lesson, out_png: Path):
 
     # Фирменный призыв внизу на плашке (единый, как в ручных роликах)
     f_cta = pick_font(FONT_BOLD, 56)
-    lines = wrap_to_width(d, CTA_TEXT, f_cta, W - 220)
+    lines = wrap_to_width(d, cta, f_cta, W - 220)
     lh = 74
     bot, top = 1730, 1730 - 56 - lh * len(lines)
     rounded_panel(d, [80, top, W - 80, bot])
@@ -1192,9 +1197,11 @@ def draw_overlay(lesson, out_png: Path):
 # ---------- сборка ----------
 
 def caption_for(n, lesson):
+    # Реклама курса — в конце: первая строка подписи служит заголовком
     return (f'{lesson["hook"]} · {lesson["ar"]} · {lesson["translit"]}\n'
             f'{lesson["teach"]}\n{lesson["cta"]}\n'
-            "#арабский #арабскийязык #арабскийснуля #учимарабский #шортс")
+            "#арабский #арабскийязык #арабскийснуля #учимарабский #шортс\n\n"
+            + description_block()).rstrip()
 
 
 def build_short(n: int):
@@ -1211,7 +1218,8 @@ def build_short(n: int):
     total = probe_duration(voice) + 1.5
 
     overlay = work / "overlay.png"
-    draw_overlay(lesson, overlay)
+    draw_overlay(lesson, overlay,
+                 PROMO_SCREEN if course_day(n) else CTA_TEXT)
 
     bg = build_background(lesson, total, work)
 

@@ -21,6 +21,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 HERE = Path(__file__).parent
 STATE = HERE / "long_state.json"
 
+from promo import with_ad
 from long_video import EPISODES, OUT_DIR, build_episode, make_thumbnail
 
 
@@ -56,8 +57,8 @@ def main():
 
     ep = EPISODES[n]
     title = f'Мединский курс — Серия {n}: {ep["title"]}'[:100]
-    desc = (HERE / "build" / "long" / f"episode_{n:02d}.txt").read_text(
-        encoding="utf-8")
+    desc = with_ad((HERE / "build" / "long" / f"episode_{n:02d}.txt").read_text(
+        encoding="utf-8"))
     tags = ["арабский", "арабский язык", "мединский курс", "с нуля", "урок арабского"]
 
     print(f"YouTube: серия {n} — «{title}»")

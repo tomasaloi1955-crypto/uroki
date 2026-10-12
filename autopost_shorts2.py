@@ -23,6 +23,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 HERE = Path(__file__).parent
 STATE = HERE / "shorts2_state.json"
 
+from promo import with_ad
 from shorts_v2 import LESSONS, OUT_DIR, build_short, strip_accents
 
 
@@ -41,8 +42,8 @@ def meta(n):
     l = LESSONS[n]
     word = strip_accents(l["translit"]).split("—")[0].strip().rstrip("!?.")
     title = f'{l["hook"]} по-арабски: {l["ar"]} ({word}) #shorts'
-    desc = (f'{l["teach"]}\n{l["cta"]}\n\n'
-            "#арабский #арабскийязык #арабскийснуля #учимарабский #shorts")
+    desc = with_ad(f'{l["teach"]}\n{l["cta"]}\n\n'
+                   "#арабский #арабскийязык #арабскийснуля #учимарабский #shorts")
     return title[:100], desc
 
 
