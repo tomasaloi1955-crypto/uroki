@@ -16,7 +16,7 @@
 
 import os
 
-COURSE_URL = ""  # ссылка Tribute на курс, например https://t.me/tribute/app?startapp=...
+COURSE_URL = "https://t.me/tamra_school/1481"  # ссылка Tribute на курс, например https://t.me/tribute/app?startapp=...
 
 # Плашка внизу кадра шортса (коротко: на экране максимум 2 строки)
 SCREEN_TEXT = "Курс: алфавит + таджвид — ссылка в описании"
