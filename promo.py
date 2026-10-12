@@ -18,7 +18,7 @@ import os
 
 # Ссылки Tribute, например https://t.me/tribute/app?startapp=...
 COURSE_URL = "https://t.me/tamra_school/1481"  # тариф «Самостоятельно» (или общая)
-CHECK_URL = ""  # тариф «С проверкой ДЗ»; пусто — ведёт на COURSE_URL
+CHECK_URL = "https://web.tribute.tg/s/18VF"  # тариф «С проверкой ДЗ»; пусто — ведёт на COURSE_URL
 
 # Плашка внизу кадра шортса (коротко: на экране максимум 2 строки)
 SCREEN_TEXT = "Курс: алфавит + таджвид — ссылка в описании"
