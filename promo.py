@@ -16,7 +16,9 @@
 
 import os
 
-COURSE_URL = "https://t.me/tamra_school/1481"  # ссылка Tribute на курс, например https://t.me/tribute/app?startapp=...
+# Ссылки Tribute, например https://t.me/tribute/app?startapp=...
+COURSE_URL = "https://t.me/tamra_school/1481"  # тариф «Самостоятельно» (или общая)
+CHECK_URL = ""  # тариф «С проверкой ДЗ»; пусто — ведёт на COURSE_URL
 
 # Плашка внизу кадра шортса (коротко: на экране максимум 2 строки)
 SCREEN_TEXT = "Курс: алфавит + таджвид — ссылка в описании"
@@ -28,6 +30,10 @@ VOICE_TEXT = ("Хочешь читать Коран правильно? "
 
 def course_url() -> str:
     return (os.environ.get("COURSE_URL") or COURSE_URL).strip()
+
+
+def check_url() -> str:
+    return (os.environ.get("CHECK_URL") or CHECK_URL).strip()
 
 
 def enabled() -> bool:
@@ -45,9 +51,18 @@ def description_block() -> str:
         return ""
     return ("📖 Научись читать Коран с нуля: курс «Алфавит + таджвид» "
             "по книге «Муаллим сани»\n"
-            f"👉 {course_url()}\n"
+            + tariffs() + "\n")
+
+
+def tariffs() -> str:
+    if check_url():  # у каждого тарифа своя ссылка
+        return ("✅ Самостоятельно — видеоуроки и материалы\n"
+                f"👉 {course_url()}\n"
+                "✅ С проверкой ДЗ — присылаешь чтение, я исправляю каждую ошибку\n"
+                f"👉 {check_url()}\n")
+    return (f"👉 {course_url()}\n"
             "✅ Самостоятельно — видеоуроки и материалы\n"
-            "✅ С проверкой ДЗ — присылаешь чтение, я исправляю каждую ошибку\n\n")
+            "✅ С проверкой ДЗ — присылаешь чтение, я исправляю каждую ошибку\n")
 
 
 def with_ad(description: str) -> str:
