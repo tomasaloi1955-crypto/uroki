@@ -23,7 +23,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 HERE = Path(__file__).parent
 STATE = HERE / "shorts2_state.json"
 
-from promo import with_ad
+from promo import social_line, with_ad
 from shorts_v2 import LESSONS, OUT_DIR, build_short, strip_accents
 
 
@@ -45,6 +45,16 @@ def meta(n):
     desc = with_ad(f'{l["teach"]}\n{l["cta"]}\n\n'
                    "#арабский #арабскийязык #арабскийснуля #учимарабский #shorts")
     return title[:100], desc
+
+
+def social_caption(n):
+    """Подпись для Instagram и TikTok (без ссылок — там они не кликаются)."""
+    l = LESSONS[n]
+    return "\n".join(s for s in (
+        f'{l["hook"]} · {l["ar"]} · {l["translit"]}',
+        l["teach"], l["cta"], social_line(),
+        "#арабский #арабскийязык #арабскийснуля #учимарабский #reels #арабский_язык",
+    ) if s)
 
 
 def main():
@@ -76,6 +86,10 @@ def main():
     if n not in st["posted"]:
         st["posted"].append(n)
     save_state(st)
+
+    # Тот же ролик — в Instagram Reels и TikTok (кто не настроен — пропуск)
+    from cross_post import post_everywhere
+    post_everywhere(video, social_caption(n))
     print("Готово на сегодня.")
 
 

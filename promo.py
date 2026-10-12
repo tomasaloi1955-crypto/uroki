@@ -65,5 +65,14 @@ def tariffs() -> str:
             "✅ С проверкой ДЗ — присылаешь чтение, я исправляю каждую ошибку\n")
 
 
+def social_line() -> str:
+    """Для Instagram и TikTok: ссылки в подписи там не кликаются,
+    поэтому зовём в шапку профиля (туда ставится ссылка на курс)."""
+    if not enabled():
+        return ""
+    return ("📖 Курс «Алфавит + таджвид» — самостоятельно или с проверкой ДЗ. "
+            "Ссылка в шапке профиля")
+
+
 def with_ad(description: str) -> str:
     return description_block() + description
