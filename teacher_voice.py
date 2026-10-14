@@ -23,9 +23,10 @@ VOICE_DIR = Path("voice")
 AUDIO = (".m4a", ".mp3", ".ogg", ".opus", ".wav", ".aac")
 
 
-def recording(n: int):
-    """Запись серии n или None."""
-    for stem in (f"seriya_{n}", f"seriya_{n:02d}"):
+def recording(n):
+    """Запись серии n (или файла voice/<n>.*, если n — строка) или None."""
+    stems = [n] if isinstance(n, str) else [f"seriya_{n}", f"seriya_{n:02d}"]
+    for stem in stems:
         for ext in AUDIO:
             p = VOICE_DIR / f"{stem}{ext}"
             if p.exists():

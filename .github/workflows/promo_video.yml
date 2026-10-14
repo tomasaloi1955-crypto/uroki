@@ -1,0 +1,44 @@
+name: Видео-презентация курса
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_at:
+        description: "Опубликовать в (UTC, напр. 2026-10-15T09:00:00Z); пусто — сразу"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Устанавливаем ffmpeg и шрифты
+        timeout-minutes: 12
+        run: |
+          for i in 1 2 3; do
+            sudo apt-get update -q && \
+            sudo apt-get install -y -q --no-install-recommends \
+              ffmpeg fonts-noto-core fonts-dejavu-core && break
+            sleep 20
+          done
+      - name: Устанавливаем python-библиотеки
+        run: pip install pillow arabic-reshaper python-bidi requests edge-tts
+      - name: Собираем презентацию и загружаем на YouTube
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          PROMO_PUBLISH_AT: ${{ inputs.publish_at }}
+        run: python promo_video.py upload
+      - name: Видео — в артефакты (скачать и посмотреть)
+        uses: actions/upload-artifact@v4
+        with:
+          name: promo
+          path: build/long/promo.mp4
