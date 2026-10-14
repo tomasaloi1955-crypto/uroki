@@ -50,12 +50,19 @@ def yt_access_token():
     return r.json()["access_token"]
 
 
-def yt_upload(video: Path, title: str, description: str, tags):
+def yt_upload(video: Path, title: str, description: str, tags,
+              publish_at: str = None):
+    """publish_at (ISO, напр. 2026-10-16T09:00:00Z) — загрузить скрытым
+    и опубликовать автоматически в это время; до него автор видит ролик
+    в YouTube Studio и может проверить."""
     token = yt_access_token()
+    status = {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
+    if publish_at:
+        status.update(privacyStatus="private", publishAt=publish_at)
     meta = {
         "snippet": {"title": title[:95], "description": description,
                     "tags": tags, "categoryId": "27"},  # 27 = Education
-        "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False},
+        "status": status,
     }
     init = requests.post(
         "https://www.googleapis.com/upload/youtube/v3/videos"

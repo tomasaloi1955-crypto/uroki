@@ -65,7 +65,10 @@ def main():
     if all(os.environ.get(k) for k in
            ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN")):
         from social_post import yt_upload, yt_set_thumbnail
-        vid = yt_upload(video, title, desc, tags)
+        publish_at = os.environ.get("LONG_PUBLISH_AT") or None
+        if publish_at:
+            print(f"  отложенная публикация: {publish_at}")
+        vid = yt_upload(video, title, desc, tags, publish_at)
         yt_set_thumbnail(vid, thumb)
     else:
         from upload_youtube import upload_video, set_thumbnail

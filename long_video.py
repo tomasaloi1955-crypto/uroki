@@ -25,6 +25,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from voice_budget import free_tts, long_may_use_eleven
+from teacher_voice import scene_voices
 from shorts_v2 import (
     GOLD, FONT_BOLD, FONT_REG, FONT_AR, UA,
     ar_text, pick_font, strip_accents, wrap_to_width,
@@ -1901,11 +1902,16 @@ def build_episode(n: int) -> Path:
     print(f"Эпизод {n}: {ep['title']}")
     vocab = build_ar_vocab(ep["scenes"])
 
-    # Бесплатный лимит ElevenLabs — прежде всего шортсам; серия берёт
-    # ElevenLabs целиком или не берёт совсем (голос не смешивается).
+    # Голос преподавателя (voice/seriya_N.*) важнее любого синтеза:
+    # запись режется на сцены в voice_NN.mp3, и синтез их уже не трогает.
     global USE_ELEVEN
     engine_file = work / "voice_engine.txt"
-    if engine_file.exists():             # недособранная серия — тем же голосом
+    if scene_voices(n, ep["scenes"], work):
+        print("  голос: запись преподавателя")
+        engine_file.write_text("teacher", encoding="utf-8")
+    # Бесплатный лимит ElevenLabs — прежде всего шортсам; серия берёт
+    # ElevenLabs целиком или не берёт совсем (голос не смешивается).
+    elif engine_file.exists():             # недособранная серия — тем же голосом
         USE_ELEVEN = engine_file.read_text(encoding="utf-8").strip() == "eleven"
     else:
         USE_ELEVEN = long_may_use_eleven(episode_chars(ep["scenes"], vocab))

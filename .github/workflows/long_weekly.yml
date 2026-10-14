@@ -6,6 +6,13 @@ on:
   # schedule:
   #   - cron: "0 9 * * 1,3,5"   # 09:00 UTC = 12:00 по времени пользователя (UTC+3), пн/ср/пт
   workflow_dispatch:
+    inputs:
+      episode:
+        description: "Номер серии (пусто — следующая по очереди)"
+        required: false
+      publish_at:
+        description: "Опубликовать в (UTC, напр. 2026-10-16T09:00:00Z); пусто — сразу"
+        required: false
 
 permissions:
   contents: write
@@ -46,7 +53,8 @@ jobs:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-        run: python autopost_long.py
+          LONG_PUBLISH_AT: ${{ inputs.publish_at }}
+        run: python autopost_long.py ${{ inputs.episode }}
 
       - name: Сохраняем журнал публикаций
         run: |
@@ -54,4 +62,4 @@ jobs:
           git config user.email "bot@users.noreply.github.com"
           git add long_state.json
           git diff --cached --quiet || git commit -m "Серия опубликована, очередь +1"
-          git push
+          git pull --rebase && git push
