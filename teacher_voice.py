@@ -39,7 +39,17 @@ def _norm(w: str) -> str:
     return re.sub(r"[^\w]", "", w)
 
 
-def scene_spans(n: int, scenes):
+def silences(src: Path, noise_db=-38, min_dur=0.3):
+    """[(начало, конец)] пауз в записи (ffmpeg silencedetect)."""
+    p = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(src), "-af",
+                        f"silencedetect=noise={noise_db}dB:d={min_dur}",
+                        "-f", "null", "-"], capture_output=True, text=True)
+    starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", p.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", p.stderr)]
+    return list(zip(starts, ends))
+
+
+def scene_spans(n, scenes):
     """[(начало, конец)] в секундах для каждой сцены, либо None, если
     записи или распознавания нет. Бросает ValueError, если сцену не
     удалось найти в записи (пропущена или прочитана не та)."""
@@ -75,12 +85,24 @@ def scene_spans(n: int, scenes):
         if first[i] <= last[i - 1]:
             raise ValueError(f"сцены {i} и {i + 1} перепутаны в записи серии {n}")
 
-    # разрез — середина самой длинной паузы между сценами
+    # Разрез — по настоящей тишине в записи между последним узнанным
+    # словом сцены и первым узнанным словом следующей (тайминги слов у
+    # распознавания бывают склеенными). Из пауз берём ПОСЛЕДНЮЮ достаточно
+    # длинную: перед ней часто стоит «Ответ: …» с паузой для зрителя —
+    # её резать нельзя, ответ относится к предыдущей сцене.
+    sil = silences(rec)
     cuts = []
     for i in range(1, len(scenes)):
-        lo, hi = last[i - 1], first[i]
-        k = max(range(lo, hi), key=lambda j: hyp[j + 1]["s"] - hyp[j]["e"])
-        cuts.append((hyp[k]["e"] + hyp[k + 1]["s"]) / 2)
+        lo, hi = hyp[last[i - 1]]["s"], hyp[first[i]]["e"]
+        inside = [(a, b) for a, b in sil if a >= lo - 0.2 and b <= hi + 0.2]
+        if inside:
+            longest = max(b - a for a, b in inside)
+            a, b = [x for x in inside if x[1] - x[0] >= 0.6 * longest][-1]
+            cuts.append((a + b) / 2)
+        else:  # тишины не нашлось — по таймингам слов
+            k = max(range(last[i - 1], first[i]),
+                    key=lambda j: hyp[j + 1]["s"] - hyp[j]["e"])
+            cuts.append((hyp[k]["e"] + hyp[k + 1]["s"]) / 2)
     starts = [max(0.0, hyp[0]["s"] - 0.3)] + cuts
     ends = cuts + [hyp[-1]["e"] + 0.6]
     return list(zip(starts, ends))
