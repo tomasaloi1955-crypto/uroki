@@ -43,6 +43,7 @@ jobs:
           # Не больше одного ролика в день: если мультик сегодня уже вышел (например, ручной запуск) — пропуск
           if python -c "import json,sys;h=json.load(open('cartoons_state.json')).get('history',[]);sys.exit(0 if h and h[-1]['date']=='$TODAY' else 1)" 2>/dev/null; then
             echo "kind=none" >> "$GITHUB_OUTPUT"; echo "Сегодня мультик уже опубликован — пропуск"
+          elif [ "$(date -u +%u)" = "6" ]; then echo "kind=promo" >> "$GITHUB_OUTPUT"   # суббота — реклама курса
           elif [ $(( $(date -u +%s) / 86400 % 2 )) -eq 0 ]; then echo "kind=word" >> "$GITHUB_OUTPUT"
           else echo "kind=cartoon" >> "$GITHUB_OUTPUT"; fi
           echo "Сегодня: $(( $(date -u +%s) / 86400 % 2 ))"
@@ -51,14 +52,14 @@ jobs:
         run: pip install pillow arabic-reshaper python-bidi requests edge-tts numpy
 
       - name: Забираем мультики из tg-promo-agent
-        if: steps.day.outputs.kind == 'cartoon'
+        if: steps.day.outputs.kind == 'cartoon' || steps.day.outputs.kind == 'promo'
         uses: actions/checkout@v4
         with:
           repository: tomasaloi1955-crypto/tg-promo-agent
           path: cartoons
 
       - name: Мультик дня → YouTube (и Instagram, если подключён)
-        if: steps.day.outputs.kind == 'cartoon'
+        if: steps.day.outputs.kind == 'cartoon' || steps.day.outputs.kind == 'promo'
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
@@ -70,7 +71,8 @@ jobs:
           TG_CHANNEL: myarabicl
         run: |
           sudo apt-get install -y -q --no-install-recommends libfribidi0 libraqm0 || true
-          python cartoons/shorts/autopost.py --only youtube,instagram --kinds new --state cartoons_state.json
+          if [ "${{ steps.day.outputs.kind }}" = "promo" ]; then KINDS=promo; else KINDS=new; fi
+          python cartoons/shorts/autopost.py --only youtube,instagram --kinds $KINDS --state cartoons_state.json
 
       - name: Собираем шортс дня и постим на YouTube
         if: steps.day.outputs.kind == 'word'
