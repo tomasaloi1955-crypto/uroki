@@ -39,7 +39,12 @@ jobs:
       - name: Чей сегодня день — «Слово дня» или мультик?
         id: day
         run: |
-          if [ $(( $(date -u +%s) / 86400 % 2 )) -eq 0 ]; then echo "kind=word" >> "$GITHUB_OUTPUT"; else echo "kind=cartoon" >> "$GITHUB_OUTPUT"; fi
+          TODAY=$(date -u +%F)
+          # Не больше одного ролика в день: если мультик сегодня уже вышел (например, ручной запуск) — пропуск
+          if python -c "import json,sys;h=json.load(open('cartoons_state.json')).get('history',[]);sys.exit(0 if h and h[-1]['date']=='$TODAY' else 1)" 2>/dev/null; then
+            echo "kind=none" >> "$GITHUB_OUTPUT"; echo "Сегодня мультик уже опубликован — пропуск"
+          elif [ $(( $(date -u +%s) / 86400 % 2 )) -eq 0 ]; then echo "kind=word" >> "$GITHUB_OUTPUT"
+          else echo "kind=cartoon" >> "$GITHUB_OUTPUT"; fi
           echo "Сегодня: $(( $(date -u +%s) / 86400 % 2 ))"
 
       - name: Устанавливаем python-библиотеки
