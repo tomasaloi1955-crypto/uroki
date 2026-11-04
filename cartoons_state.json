@@ -1,1 +1,16 @@
-{"next_new": 1, "next_word": 1, "old_done": [], "last_kind": "new", "history": []}
+{
+ "next_new": 2,
+ "next_word": 1,
+ "old_done": [],
+ "last_kind": "new",
+ "history": [
+  {
+   "date": "2026-11-04",
+   "key": "dialog:1",
+   "results": {
+    "youtube": "✅ https://youtube.com/shorts/eqXxfgI2_XI",
+    "instagram": "⏭ пропущено: нет IG_USER_ID / IG_ACCESS_TOKEN"
+   }
+  }
+ ]
+}
