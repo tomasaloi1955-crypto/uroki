@@ -1,8 +1,10 @@
-name: Ежедневный шортс (v2)
+name: Ежедневный шортс (v2) + мультики через день
 
 on:
   schedule:
     - cron: "0 8 * * *"   # 08:00 UTC = 11:00 по времени пользователя (UTC+3)
+  # Через день: чётный день — «Слово дня» (этот конвейер, shorts_v2), нечётный — мультик-диалог
+  # из tg-promo-agent (shorts/episodes/dialog_NNN.json, с озвучкой). Очередь мультиков — cartoons_state.json.
   workflow_dispatch:        # + кнопка ручного запуска
 
 permissions:
@@ -34,10 +36,39 @@ jobs:
           done
           ffmpeg -version | head -1
 
+      - name: Чей сегодня день — «Слово дня» или мультик?
+        id: day
+        run: |
+          if [ $(( $(date -u +%s) / 86400 % 2 )) -eq 0 ]; then echo "kind=word" >> "$GITHUB_OUTPUT"; else echo "kind=cartoon" >> "$GITHUB_OUTPUT"; fi
+          echo "Сегодня: $(( $(date -u +%s) / 86400 % 2 ))"
+
       - name: Устанавливаем python-библиотеки
-        run: pip install pillow arabic-reshaper python-bidi requests edge-tts
+        run: pip install pillow arabic-reshaper python-bidi requests edge-tts numpy
+
+      - name: Забираем мультики из tg-promo-agent
+        if: steps.day.outputs.kind == 'cartoon'
+        uses: actions/checkout@v4
+        with:
+          repository: tomasaloi1955-crypto/tg-promo-agent
+          path: cartoons
+
+      - name: Мультик дня → YouTube (и Instagram, если подключён)
+        if: steps.day.outputs.kind == 'cartoon'
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_MADE_FOR_KIDS: "true"
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_GRAPH_HOST: ${{ secrets.IG_API_HOST || 'graph.instagram.com' }}
+          TG_CHANNEL: myarabicl
+        run: |
+          sudo apt-get install -y -q --no-install-recommends libfribidi0 libraqm0 || true
+          python cartoons/shorts/autopost.py --only youtube,instagram --kinds new --state cartoons_state.json
 
       - name: Собираем шортс дня и постим на YouTube
+        if: steps.day.outputs.kind == 'word'
         env:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
@@ -59,6 +90,6 @@ jobs:
         run: |
           git config user.name "autopost-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add shorts2_state.json
+          git add shorts2_state.json cartoons_state.json 2>/dev/null || git add shorts2_state.json
           git diff --cached --quiet || git commit -m "Шортс опубликован, очередь +1"
           git push
