@@ -58,7 +58,7 @@ jobs:
           repository: tomasaloi1955-crypto/tg-promo-agent
           path: cartoons
 
-      - name: Мультик дня → YouTube (и Instagram, если подключён)
+      - name: Мультик дня (диалог или «Слово дня») → YouTube (и Instagram, если подключён)
         if: steps.day.outputs.kind == 'cartoon' || steps.day.outputs.kind == 'promo'
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -71,7 +71,7 @@ jobs:
           TG_CHANNEL: myarabicl
         run: |
           sudo apt-get install -y -q --no-install-recommends libfribidi0 libraqm0 || true
-          if [ "${{ steps.day.outputs.kind }}" = "promo" ]; then KINDS=promo; else KINDS=new; fi
+          if [ "${{ steps.day.outputs.kind }}" = "promo" ]; then KINDS=promo; else KINDS=cartoons; fi   # диалог и «Слово дня» по очереди
           python cartoons/shorts/autopost.py --only youtube,instagram --kinds $KINDS --state cartoons_state.json
 
       - name: Собираем шортс дня и постим на YouTube
