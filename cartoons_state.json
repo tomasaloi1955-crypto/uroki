@@ -1,8 +1,8 @@
 {
- "next_new": 6,
+ "next_new": 7,
  "next_word": 2,
  "old_done": [],
- "last_kind": "word",
+ "last_kind": "new",
  "history": [
   {
    "date": "2026-11-04",
@@ -73,6 +73,14 @@
    "key": "promo:2026-47",
    "results": {
     "youtube": "✅ https://youtube.com/shorts/fCGzN2mGI9Q",
+    "instagram": "⏭ пропущено: нет IG_USER_ID / IG_ACCESS_TOKEN"
+   }
+  },
+  {
+   "date": "2026-11-22",
+   "key": "dialog:6",
+   "results": {
+    "youtube": "✅ https://youtube.com/shorts/qIW90F5awaQ",
     "instagram": "⏭ пропущено: нет IG_USER_ID / IG_ACCESS_TOKEN"
    }
   }
