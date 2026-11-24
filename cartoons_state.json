@@ -1,8 +1,8 @@
 {
  "next_new": 7,
- "next_word": 2,
+ "next_word": 3,
  "old_done": [],
- "last_kind": "new",
+ "last_kind": "word",
  "history": [
   {
    "date": "2026-11-04",
@@ -81,6 +81,14 @@
    "key": "dialog:6",
    "results": {
     "youtube": "✅ https://youtube.com/shorts/qIW90F5awaQ",
+    "instagram": "⏭ пропущено: нет IG_USER_ID / IG_ACCESS_TOKEN"
+   }
+  },
+  {
+   "date": "2026-11-24",
+   "key": "word:2",
+   "results": {
+    "youtube": "✅ https://youtube.com/shorts/oje3yuk3CPo",
     "instagram": "⏭ пропущено: нет IG_USER_ID / IG_ACCESS_TOKEN"
    }
   }
